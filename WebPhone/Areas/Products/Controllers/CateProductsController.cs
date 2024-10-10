@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebPhone.Areas.Accounts.Models.Accounts;
+using WebPhone.Areas.Products.Models.CateProducts;
 using WebPhone.EF;
 
 namespace WebPhone.Areas.Products.Controllers
@@ -67,18 +68,22 @@ namespace WebPhone.Areas.Products.Controllers
 
         [HttpPost("create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryName, IdParent")] CategoryProduct categoryProduct)
+        public async Task<IActionResult> Create([Bind("CategoryName, IdParent")] CateProductDTO cateProductDTO)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
                     TempData["Message"] = "Error: Vui lòng nhập đầy đủ thông tin";
-                    return View(categoryProduct);
+                    return View(cateProductDTO);
                 }
 
-                categoryProduct.Id = Guid.NewGuid();
-                categoryProduct.IdParent = categoryProduct.IdParent;
+                var categoryProduct = new CategoryProduct
+                {
+                    CategoryName = cateProductDTO.CategoryName,
+                    IdParent = cateProductDTO.IdParent
+                };
+
                 _context.Add(categoryProduct);
                 await _context.SaveChangesAsync();
 
@@ -90,7 +95,7 @@ namespace WebPhone.Areas.Products.Controllers
             {
                 _logger.LogError(ex.Message);
                 TempData["Message"] = "Error: Lỗi hệ thống";
-                return View(categoryProduct);
+                return RedirectToAction(nameof(Create));
             }
         }
 
@@ -106,25 +111,41 @@ namespace WebPhone.Areas.Products.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(categoryProduct);
+            var cateProductDTO = new CateProductDTO
+            {
+                Id = categoryProduct.Id,
+                CategoryName = categoryProduct.CategoryName,
+                IdParent = categoryProduct.IdParent,
+            };
+
+            return View(cateProductDTO);
         }
 
         [HttpPost("edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryName, IdParent")] CategoryProduct categoryProduct)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryName, IdParent")] CateProductDTO cateProductDTO)
         {
-            if (id != categoryProduct.Id)
+            if (id != cateProductDTO.Id)
             {
                 TempData["Message"] = "Error: Danh mục không hợp lệ";
-                return View(categoryProduct);
+                return View(cateProductDTO);
             }
 
             if (!ModelState.IsValid)
             {
                 TempData["Message"] = "Error: Vui lòng nhập đầy đủ thông tin";
-                return View(categoryProduct);
+                return View(cateProductDTO);
             }
 
+            var categoryProduct = await _context.CategoryProducts.FindAsync(id);
+            if(categoryProduct == null)
+            {
+                TempData["Message"] = "Error: Không tìm thấy danh mục";
+                return View(cateProductDTO);
+            }
+
+            categoryProduct.CategoryName = cateProductDTO.CategoryName;
+            categoryProduct.IdParent = cateProductDTO.IdParent;
             categoryProduct.UpdateAt = DateTime.UtcNow;
 
             _context.Update(categoryProduct);

@@ -1,28 +1,22 @@
 ﻿@model IEnumerable<CategoryProduct>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Danh mục";
     var count = 0;
 }
 
-<h1>Index</h1>
+<h1>Danh mục sản phẩm</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Tạo mới</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>STT</th>
-            <th>
-                @Html.DisplayNameFor(model => model.CategoryName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreateAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdateAt)
-            </th>
+            <th>Tên danh mục</th>
+            <th>Ngày tạo</th>
+            <th>Ngày cập nhật</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -37,12 +31,12 @@
                 @item.CreateAt.ToString("dd/MM/yyyy HH:mm:ss")
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.UpdateAt)
+                @item.UpdateAt?.ToString("dd/MM/yyyy HH:mm:ss")
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
             </td>
         </tr>
 }
