@@ -6,7 +6,7 @@
 <h1>Đăng nhập</h1>
 <hr />
 <div class="row">
-    <form asp-action="Login" method="post" class="col-md-4">
+    <form asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="col-md-4">
         <div class="form-group">
             <label asp-for="Email"></label>
             <input asp-for="Email" class="form-control" />

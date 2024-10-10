@@ -78,18 +78,24 @@ namespace WebPhone.Areas.Accounts.Controllers
         }
 
         [HttpGet("login")]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl)
         {
             if (CheckLogin())
                 return RedirectToAction("Index", "Home");
+
+            returnUrl ??= Url.Content("/");
+            ViewData["ReturnUrl"] = returnUrl;
 
             return View();
         }
 
         [HttpPost("login")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginDTO loginDTO)
+        public async Task<IActionResult> Login(LoginDTO loginDTO, string? returnUrl)
         {
+            returnUrl ??= Url.Content("/");
+            ViewData["ReturnUrl"] = returnUrl;
+
             try
             {
                 if (!ModelState.IsValid)
@@ -131,7 +137,7 @@ namespace WebPhone.Areas.Accounts.Controllers
                     new ClaimsPrincipal(claimIdentity),
                     authProperties);
 
-                return RedirectToAction("Index", "Home");
+                return LocalRedirect(returnUrl);
             }
             catch (Exception ex)
             {
