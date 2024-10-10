@@ -1,0 +1,28 @@
+﻿@model User
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
+<h1>Thông tin cá nhân</h1>
+
+<div>
+    <h4>User</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Họ tên
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="ChangePassword">Đổi mật khẩu</a>
+</div>
