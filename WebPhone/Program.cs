@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using CloudinaryDotNet;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using WebPhone.Controllers;
 using WebPhone.EF;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     options.LoginPath = "/customer/login";
     options.LogoutPath = "/customer/logout";
     options.ExpireTimeSpan = TimeSpan.FromDays(30); // Thời gian hết hạn của cookie
+});
+
+builder.Services.AddScoped<MediaHandle>();
+builder.Services.AddScoped<Cloudinary>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var account = new Account(
+        configuration["Cloudinary:CloudName"],
+        configuration["Cloudinary:ApiKey"],
+        configuration["Cloudinary:ApiSecret"]
+    );
+    return new Cloudinary(account);
 });
 
 var app = builder.Build();

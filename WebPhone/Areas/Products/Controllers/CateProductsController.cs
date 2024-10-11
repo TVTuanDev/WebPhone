@@ -127,33 +127,42 @@ namespace WebPhone.Areas.Products.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryName, IdParent")] CateProductDTO cateProductDTO)
         {
-            if (id != cateProductDTO.Id)
+            try
             {
-                TempData["Message"] = "Error: Danh mục không hợp lệ";
-                return View(cateProductDTO);
-            }
+                if (id != cateProductDTO.Id)
+                {
+                    TempData["Message"] = "Error: Danh mục không hợp lệ";
+                    return View(cateProductDTO);
+                }
 
-            if (!ModelState.IsValid)
+                if (!ModelState.IsValid)
+                {
+                    TempData["Message"] = "Error: Vui lòng nhập đầy đủ thông tin";
+                    return View(cateProductDTO);
+                }
+
+                var categoryProduct = await _context.CategoryProducts.FindAsync(id);
+                if (categoryProduct == null)
+                {
+                    TempData["Message"] = "Error: Không tìm thấy danh mục";
+                    return View(cateProductDTO);
+                }
+
+                categoryProduct.CategoryName = cateProductDTO.CategoryName;
+                categoryProduct.IdParent = cateProductDTO.IdParent;
+                categoryProduct.UpdateAt = DateTime.UtcNow;
+
+                _context.Update(categoryProduct);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
             {
-                TempData["Message"] = "Error: Vui lòng nhập đầy đủ thông tin";
-                return View(cateProductDTO);
+                _logger.LogError(ex.Message);
+                TempData["Message"] = "Error: Lỗi hệ thống";
+                return RedirectToAction(nameof(Edit));
             }
-
-            var categoryProduct = await _context.CategoryProducts.FindAsync(id);
-            if(categoryProduct == null)
-            {
-                TempData["Message"] = "Error: Không tìm thấy danh mục";
-                return View(cateProductDTO);
-            }
-
-            categoryProduct.CategoryName = cateProductDTO.CategoryName;
-            categoryProduct.IdParent = cateProductDTO.IdParent;
-            categoryProduct.UpdateAt = DateTime.UtcNow;
-
-            _context.Update(categoryProduct);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("delete")]
@@ -178,35 +187,39 @@ namespace WebPhone.Areas.Products.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            if (_context.CategoryProducts == null)
+            try
             {
-                return Problem("Entity set 'AppDbContext.CategoryProducts'  is null.");
-            }
-            var categoryProduct = await _context.CategoryProducts.FindAsync(id);
-            if (categoryProduct == null)
-            {
-                TempData["Message"] = "Error: Không tìm thấy danh mục sản phẩm";
+                if (_context.CategoryProducts == null)
+                {
+                    return Problem("Entity set 'AppDbContext.CategoryProducts'  is null.");
+                }
+                var categoryProduct = await _context.CategoryProducts.FindAsync(id);
+                if (categoryProduct == null)
+                {
+                    TempData["Message"] = "Error: Không tìm thấy danh mục sản phẩm";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var cateProductChildren = await _context.CategoryProducts.Where(cp => cp.IdParent == categoryProduct.Id).ToListAsync();
+                if (cateProductChildren.Count > 0)
+                {
+                    TempData["Message"] = "Error: Không thể xóa danh mục có chứa danh mục con";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                _context.CategoryProducts.Remove(categoryProduct);
+
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Success: Xóa danh mục thành công";
                 return RedirectToAction(nameof(Index));
             }
-
-            var cateProductChildren = await _context.CategoryProducts.Where(cp => cp.IdParent == categoryProduct.Id).ToListAsync();
-            if(cateProductChildren.Count > 0)
+            catch (Exception ex)
             {
-                TempData["Message"] = "Error: Không thể xóa danh mục có chứa danh mục con";
-                return RedirectToAction(nameof(Index));
+                _logger.LogError(ex.Message);
+                TempData["Message"] = "Error: Lỗi hệ thống";
+                return RedirectToAction(nameof(Delete));
             }
-
-            _context.CategoryProducts.Remove(categoryProduct);
-            
-            await _context.SaveChangesAsync();
-
-            TempData["Message"] = "Success: Xóa danh mục thành công";
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool CategoryProductExists(Guid id)
-        {
-          return (_context.CategoryProducts?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
         private async Task RenderCatePoduct()
