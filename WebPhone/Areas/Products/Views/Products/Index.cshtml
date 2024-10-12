@@ -7,6 +7,9 @@
     currentPage = currentPage < 1 ? 1 : currentPage;
     int.TryParse(ViewBag.CountPage.ToString(), out int countPage);
     currentPage = currentPage > countPage ? countPage : currentPage;
+    string nameProduct = Context.Request.Query["nameProduct"];
+    int startPage = 1;
+    int endPage = 10;
 }
 
 <h1>Sản phẩm</h1>
@@ -14,6 +17,53 @@
 <p>
     <a asp-action="Create">Tạo mới</a>
 </p>
+<div class="row">
+    @* <div class=" col-md-4">
+        <div class="input-group rounded">
+            <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+            <a class="btn btn-secondary input-group-text border-0 ms-3">Search</a>
+        </div>
+    </div> *@
+    <form class="col-md-4 search" asp-action="Index" method="post">
+        <div class="input-group rounded">
+            <input type="hidden" name="Page" value="@currentPage" />
+            <input type="search" name="ProductName" value="@nameProduct" class="form-control rounded" placeholder="Search..." aria-label="Search" aria-describedby="search-addon" />
+            <button class="btn btn-secondary ms-3" type="submit">Search</button>
+        </div>
+    </form>
+</div>
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination float-end me-5">
+        <li class="page-item">
+            <a class="page-link" href="@Url.Action("Index", new { page = 1, nameProduct = nameProduct })" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        @if (currentPage > 5)
+        {
+            startPage = currentPage - 5;
+            endPage = startPage + 9;
+        }
+        @if ((currentPage > countPage - 5) && currentPage > 9)
+        {
+            startPage = countPage - 9;
+            endPage = startPage + 9;
+        }
+        @for (int i = startPage; i <= countPage && i <= endPage; i++)
+        {
+            <li class="page-item @(i == currentPage ? "active" : "")">
+                <a class="page-link" href="@Url.Action("Index", new { page = i, nameProduct = nameProduct })">@i</a>
+            </li>
+        }
+        <li class="page-item">
+            <a class="page-link" href="@Url.Action("Index", new { page = countPage, nameProduct = nameProduct })" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
 <table class="table">
     <thead>
         <tr>
@@ -28,10 +78,11 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
+            <tr class="">
                 <td>@(++count)</td>
                 <td>
-                    <img src="@item.Avatar" alt="Avatar" style="width:80px; height:auto;" />
+                    @* <img src="@item.Avatar" alt="Avatar" style="width:80px; height:auto;" /> *@
+                    <img src="~/images/tour-singapore-3n2d-gardens-by-the-bay-sentosa-cong-vien-jurassic-mile-tu-hcm-65782270868d7-848x477.jpg" alt="Avatar" style="width:80px; height:auto;" />
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.ProductName)
@@ -52,23 +103,19 @@
     </tbody>
 </table>
 
-<nav aria-label="Page navigation example">
-    <ul class="pagination float-end me-5">
-        <li class="page-item">
-            <a class="page-link" href="@Url.Action("Index", new { page = 1 })" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        @for (int i = 1; i <= countPage && i <= 10; i++)
-        {
-            <li class="page-item @(i == currentPage ? "active" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
-            </li>
-        }
-        <li class="page-item">
-            <a class="page-link" href="@Url.Action("Index", new { page = countPage })" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-    </ul>
-</nav>
+
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('form.search').on('submit', function (event) {
+                event.preventDefault();
+                let urlAction = "@Url.Action("Index", "Products")";
+                let searchValue = $(this).find("input[name=ProductName]").val();
+                let url = `${urlAction}?nameProduct=${searchValue}`;
+                
+                window.location.href = url;
+            });
+        });
+    </script>
+}

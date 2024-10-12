@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using WebPhone.Areas.Products.Models.CateProducts;
 using WebPhone.Areas.Products.Models.Products;
 using WebPhone.Controllers;
@@ -22,28 +23,71 @@ namespace WebPhone.Areas.Products.Controllers
         private readonly ILogger<ProductsController> _logger;
         private readonly AppDbContext _context;
         private readonly MediaHandle _mediaHandle;
+        private readonly IMemoryCache _cache;
 
         private readonly int ITEM_PER_PAGE = 10;
+        private readonly string CACHE_KEY = "NT-Product";
 
         public ProductsController
             (
                 ILogger<ProductsController> logger,
                 AppDbContext context,
-                MediaHandle mediaHandle
+                MediaHandle mediaHandle,
+                IMemoryCache cache
             )
         {
             _logger = logger;
             _context = context;
             _mediaHandle = mediaHandle;
+            _cache = cache;
         }
 
-        [HttpGet()]
-        public async Task<IActionResult> Index(int page = 1)
+        #region CURD product
+        [HttpGet]
+        public async Task<IActionResult> Index(string? nameProduct, int page = 1)
         {
             try
             {
+                var listProduct = new List<Product>();
+                var listProductCache = await GetProductInCache();
+
+                // Nếu có truyền name product
+                if (!string.IsNullOrEmpty(nameProduct))
+                {
+                    //listProduct = await (from p in _context.Products
+                    //                     where p.ProductName.Contains(nameProduct)
+                    //                     orderby p.Price ascending
+                    //                     select (new Product
+                    //                     {
+                    //                         Id = p.Id,
+                    //                         ProductName = p.ProductName,
+                    //                         Avatar = p.Avatar,
+                    //                         Price = p.Price,
+                    //                         Discount = p.Discount
+                    //                     })).ToListAsync();
+
+                    listProduct = listProductCache.OrderBy(p => p.Price)
+                                    .Where(p => p.ProductName.Contains(nameProduct))
+                                    .ToList();
+                }
+                else
+                {
+                    //listProduct = await (from product in _context.Products
+                    //                     orderby product.Price ascending
+                    //                     select (new Product
+                    //                     {
+                    //                         Id = product.Id,
+                    //                         Avatar = product.Avatar,
+                    //                         ProductName = product.ProductName,
+                    //                         Price = product.Price,
+                    //                         Discount = product.Discount
+                    //                     })).ToListAsync();
+
+                    listProduct = listProductCache.OrderByDescending(p => p.Price).ToList();
+                }
+
                 // Lấy tổng số lượng sản phẩm
-                var total = await _context.Products.CountAsync();
+                var total = listProduct.Count();
                 // Chia ra số trang theo số lượng hiện thị sản phẩm trên mỗi trang
                 var countPage = (int)Math.Ceiling((double)total / ITEM_PER_PAGE);
                 countPage = countPage < 1 ? 1 : countPage;
@@ -52,19 +96,7 @@ namespace WebPhone.Areas.Products.Controllers
                 page = page < 1 ? 1 : page;
                 page = page > countPage ? countPage : page;
 
-                var listProduct = await (from product in _context.Products
-                                         orderby product.Price ascending
-                                         select (new Product
-                                         {
-                                             Id = product.Id,
-                                             Avatar = product.Avatar,
-                                             ProductName = product.ProductName,
-                                             Price = product.Price,
-                                             Discount = product.Discount
-                                         }))
-                                         .Skip((page - 1) * ITEM_PER_PAGE)
-                                         .Take(ITEM_PER_PAGE)
-                                         .ToListAsync();
+                listProduct = listProduct.Skip((page - 1) * ITEM_PER_PAGE).Take(ITEM_PER_PAGE).ToList();
 
                 return View(listProduct);
             }
@@ -85,6 +117,21 @@ namespace WebPhone.Areas.Products.Controllers
             }
 
             var product = await _context.Products
+                .Include(p => p.CategoryProduct)
+                .Select(p => new Product
+                {
+                    Id = p.Id,
+                    ProductName = p.ProductName,
+                    Avatar = p.Avatar,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Discount = p.Discount,
+                    CreateAt = p.CreateAt,
+                    UpdateAt = p.UpdateAt,
+                    CategoryProduct = p.CategoryProduct,
+                }).FirstOrDefaultAsync(m => m.Id == id);
+
+            var productS = await _context.Products
                 .Include(p => p.CategoryProduct)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (product == null)
@@ -128,6 +175,7 @@ namespace WebPhone.Areas.Products.Controllers
 
                 _context.Add(product);
                 await _context.SaveChangesAsync();
+                await SetProductInCache();
 
                 TempData["Message"] = "Success: Thêm mới sản phẩm thành công";
 
@@ -152,7 +200,7 @@ namespace WebPhone.Areas.Products.Controllers
             }
         }
 
-        [HttpGet("Edit")]
+        [HttpGet("edit")]
         public async Task<IActionResult> Edit(Guid? id)
         {
             await RenderCatePoduct();
@@ -212,6 +260,7 @@ namespace WebPhone.Areas.Products.Controllers
 
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
+            await SetProductInCache();
 
             TempData["Message"] = "Success: Sửa sản phẩm thành công";
 
@@ -248,12 +297,15 @@ namespace WebPhone.Areas.Products.Controllers
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+            await SetProductInCache();
 
             TempData["Message"] = "Success: Xóa sản phẩm thành công";
 
             return RedirectToAction(nameof(Index));
         }
+        #endregion
 
+        #region Random product
         [HttpGet("random/{count}")]
         public async Task<IActionResult> RamdomProduct(int count)
         {
@@ -284,6 +336,7 @@ namespace WebPhone.Areas.Products.Controllers
                     _context.Products.Add(product);
                 }
                 await _context.SaveChangesAsync();
+                await SetProductInCache();
 
                 TempData["Message"] = "Success: Thêm sản phẩm thành công";
 
@@ -317,11 +370,8 @@ namespace WebPhone.Areas.Products.Controllers
 
                 _context.Products.RemoveRange(products);
 
-                //products.ForEach(product =>
-                //{
-                //    _context.Products.Remove(product);
-                //});
                 await _context.SaveChangesAsync();
+                await SetProductInCache();
 
                 TempData["Message"] = "Success: Xóa sản phẩm thành công";
                 return RedirectToAction(nameof(Index));
@@ -331,6 +381,59 @@ namespace WebPhone.Areas.Products.Controllers
                 _logger.LogError(ex.Message);
                 TempData["Message"] = "Error: Lỗi hệ thống";
                 return RedirectToAction(nameof(Index));
+            }
+        }
+        #endregion
+
+        private async Task<List<Product>> GetProductInCache()
+        {
+            if (!_cache.TryGetValue(CACHE_KEY, out List<Product> productList))
+            {
+                // Nếu chưa có cache thì tạo mới
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                        .SetSlidingExpiration(TimeSpan.FromMinutes(30))
+                        .SetPriority(CacheItemPriority.Normal);
+
+                await SetProductInCache();
+
+                productList = _cache.Get<List<Product>>(CACHE_KEY);
+
+                _cache.Set(CACHE_KEY, productList, cacheEntryOptions);
+            }
+
+            return productList;
+        }
+
+        private async Task SetProductInCache()
+        {
+            try
+            {
+                var productList = await (from p in _context.Products
+                                     .Include(p => p.CategoryProduct)
+                                         orderby p.Price ascending
+                                         select (new Product
+                                         {
+                                             Id = p.Id,
+                                             ProductName = p.ProductName,
+                                             Avatar = p.Avatar,
+                                             Description = p.Description,
+                                             Price = p.Price,
+                                             Discount = p.Discount,
+                                             CategoryProduct = p.CategoryProduct,
+                                         })).ToListAsync();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                        .SetSlidingExpiration(TimeSpan.FromMinutes(30))
+                        .SetPriority(CacheItemPriority.Normal);
+
+                _cache.Set(CACHE_KEY, productList, cacheEntryOptions);
+
+                var listProductCache = new List<Product>();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
             }
         }
 

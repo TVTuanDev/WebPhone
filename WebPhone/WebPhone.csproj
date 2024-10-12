@@ -21,6 +21,7 @@
   <ItemGroup>
     <Folder Include="Areas\Accounts\Data\" />
     <Folder Include="Areas\Products\Data\" />
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 </Project>
