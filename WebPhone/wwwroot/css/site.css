@@ -20,3 +20,15 @@ body {
 .wrap-none {
     white-space: nowrap;
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.tooltip-text {
+    visibility: hidden;
+}
+
+.tooltips:hover .tooltip-text {
+    visibility: inherit;
+}

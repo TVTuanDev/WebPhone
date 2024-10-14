@@ -51,5 +51,22 @@ namespace WebPhone.EF
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
+
+        //public override int SaveChanges()
+        //{
+        //    return base.SaveChanges();
+        //}
+
+        //public override Task<int> SaveChangeAsync(CancellationToken cancellationToken = default)
+        //{
+        //    return base.SaveChangesAsync(cancellationToken);
+        //}
+
+        //private void UpdateTimestamps()
+        //{
+        //    var entries = ChangeTracker
+        //        .Entries()
+        //        .Where(e => e.Entity is User && ())
+        //}
     }
 }

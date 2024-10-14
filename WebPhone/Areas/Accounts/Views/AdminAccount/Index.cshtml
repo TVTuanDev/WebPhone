@@ -1,27 +1,28 @@
-﻿@model IEnumerable<Product>
+﻿@model IEnumerable<User>
 
 @{
-    ViewData["Title"] = "Sản phẩm";
+    ViewData["Title"] = "Danh sách tài khoản";
     int count = 0;
     int.TryParse(Context.Request.Query["page"], out int currentPage);
     currentPage = currentPage < 1 ? 1 : currentPage;
     int.TryParse(ViewBag.CountPage.ToString(), out int countPage);
     currentPage = currentPage > countPage ? countPage : currentPage;
-    string nameProduct = Context.Request.Query["nameProduct"];
+    string q = Context.Request.Query["q"];
     int startPage = 1;
     int endPage = 10;
 }
 
-<h1>Sản phẩm</h1>
+<h1>@ViewData["Title"]</h1>
 
 <p>
     <a asp-action="Create">Tạo mới</a>
 </p>
+
 <div class="row">
     <form class="col-md-4 search" asp-action="Index" method="post">
         <div class="input-group rounded">
             <input type="hidden" name="Page" value="@currentPage" />
-            <input type="search" name="ProductName" value="@nameProduct" class="form-control rounded" placeholder="Search..." aria-label="Search" aria-describedby="search-addon" />
+            <input type="search" name="Email" value="@q" class="form-control rounded" placeholder="Search..." aria-label="Search" aria-describedby="search-addon" />
             <button class="btn btn-secondary ms-3" type="submit">Search</button>
         </div>
     </form>
@@ -30,7 +31,7 @@
 <nav aria-label="Page navigation example">
     <ul class="pagination float-end me-5">
         <li class="page-item">
-            <a class="page-link" href="@Url.Action("Index", new { page = 1, nameProduct = nameProduct })" aria-label="Previous">
+            <a class="page-link" href="@Url.Action("Index", new { page = 1, q = q })" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
@@ -48,11 +49,11 @@
         @for (int i = startPage; i <= countPage && i <= endPage; i++)
         {
             <li class="page-item @(i == currentPage ? "active" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { page = i, nameProduct = nameProduct })">@i</a>
+                <a class="page-link" href="@Url.Action("Index", new { page = i, q })">@i</a>
             </li>
         }
         <li class="page-item">
-            <a class="page-link" href="@Url.Action("Index", new { page = countPage, nameProduct = nameProduct })" aria-label="Next">
+            <a class="page-link" href="@Url.Action("Index", new { page = countPage, q })" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>
             </a>
         </li>
@@ -63,37 +64,33 @@
     <thead>
         <tr>
             <th>STT</th>
-            <th>Ảnh đại diện</th>
-            <th>Tên sản phẩm</th>
-            <th class="text-end">Đơn giá</th>
-            <th class="text-end">Giảm giá</th>
-            <th class="text-center">Actions</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th>Ngày cập nhật</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model)
         {
-            <tr class="">
+            <tr>
                 <td>@(++count)</td>
                 <td>
-                    @* <img src="@item.Avatar" alt="Avatar" style="width:80px; height:auto;" /> *@
-                    <img src="~/images/tour-singapore-3n2d-gardens-by-the-bay-sentosa-cong-vien-jurassic-mile-tu-hcm-65782270868d7-848x477.jpg" alt="Avatar" style="width:80px; height:auto;" />
+                    @Html.DisplayFor(modelItem => item.UserName)
                 </td>
                 <td>
-                    <span class="tooltips">
-                        @item.ProductName
-                        <a class="tooltip-text cursor-pointer ms-2"><i class="fa-solid fa-pen"></i></a>
-                    </span>
-                    @* @Html.DisplayFor(modelItem => item.ProductName) *@
-                    
+                    @Html.DisplayFor(modelItem => item.Email)
                 </td>
-                <td class="text-end">
-                    @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Price)
+                <td>@(item.EmailConfirmed ? "Đã xác thực" : "Chưa xác thực")</td>
+                <td>
+                    @item.CreateAt.ToString("dd/MM/yyyy HH:mm:ss")
                 </td>
-                <td class="text-end">
-                    @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Discount)
+                <td>
+                    @item.UpdateAt?.ToString("dd/MM/yyyy HH:mm:ss")
                 </td>
-                <td class="text-center">
+                <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
@@ -108,10 +105,10 @@
         $(function () {
             $('form.search').on('submit', function (event) {
                 event.preventDefault();
-                let urlAction = "@Url.Action("Index", "Products")";
-                let searchValue = $(this).find("input[name=ProductName]").val();
-                let url = `${urlAction}?nameProduct=${searchValue}`;
-                
+                let urlAction = "@Url.Action("Index", "AdminAccount")";
+                let searchValue = $(this).find("input[name=Email]").val();
+                let url = `${urlAction}?q=${searchValue}`;
+
                 window.location.href = url;
             });
 

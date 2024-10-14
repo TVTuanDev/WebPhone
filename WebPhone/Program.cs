@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebPhone.Controllers;
 using WebPhone.EF;
+using WebPhone.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 });
 
 builder.Services.AddScoped<MediaHandle>();
+builder.Services.AddScoped<SendMailService>();
 builder.Services.AddScoped<Cloudinary>(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
