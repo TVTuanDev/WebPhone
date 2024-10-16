@@ -32,3 +32,19 @@ body {
 .tooltips:hover .tooltip-text {
     visibility: inherit;
 }
+
+#suggestions {
+    width: 300px;
+    top: 50px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+}
+
+.list-group-item {
+    cursor: pointer;
+}
+
+.list-group-item:hover {
+    background-color: #f1f1f1;
+}

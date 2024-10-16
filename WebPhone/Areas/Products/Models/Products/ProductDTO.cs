@@ -20,13 +20,15 @@ namespace WebPhone.Areas.Products.Models.Products
 
         [Display(Name = "Giá sản phẩm")]
         [Required(ErrorMessage = "{0} bắt buộc nhập")]
+        [Range(0, int.MaxValue, ErrorMessage = "Giá trị phải lớn hơn 0")]
         public int Price { get; set; }
 
         [Display(Name = "Giá giảm")]
+        [Range(0, int.MaxValue, ErrorMessage = "Giá trị phải lớn hơn 0")]
         public int? Discount { get; set; }
 
         [Display(Name = "Danh mục sản phẩm")]
         [Required(ErrorMessage = "{0} bắt buộc nhập")]
-        public Guid CategoryId { get; set; }
+        public Guid? CategoryId { get; set; }
     }
 }

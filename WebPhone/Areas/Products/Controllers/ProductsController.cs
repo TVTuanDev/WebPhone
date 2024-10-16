@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using WebPhone.Areas.Products.Models.CateProducts;
 using WebPhone.Areas.Products.Models.Products;
 using WebPhone.Controllers;
@@ -384,6 +385,32 @@ namespace WebPhone.Areas.Products.Controllers
             }
         }
         #endregion
+
+        [HttpPost("filter")]
+        public async Task<JsonResult> FilterProduct(string name)
+        {
+            var products = await _context.Products
+                            .Where(p => p.ProductName.Contains(name))
+                            .Take(100)
+                            .Select(p => new Product
+                            {
+                                Id = p.Id,
+                                Avatar = p.Avatar,
+                                ProductName = p.ProductName,
+                                Price = p.Price,
+                                Discount = p.Discount,
+                            })
+                            .ToListAsync();
+
+            //var json = JsonConvert.SerializeObject(products);
+
+            return Json(new
+            {
+                Success = true,
+                Message = "Success",
+                Data = products
+            });
+        }
 
         private async Task<List<Product>> GetProductInCache()
         {

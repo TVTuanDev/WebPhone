@@ -10,7 +10,8 @@
         public int? Discount { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime? UpdateAt { get; set; }
-        public Guid CategoryId { get; set; }
-        public CategoryProduct CategoryProduct { get; set; } = null!;
+        public Guid? CategoryId { get; set; }
+        public virtual CategoryProduct? CategoryProduct { get; set; }
+        public virtual ICollection<BillInfo> BillInfos { get; set; } = new List<BillInfo>();
     }
 }

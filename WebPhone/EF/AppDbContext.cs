@@ -9,6 +9,8 @@ namespace WebPhone.EF
         public DbSet<User> Users { get; set; }
         public DbSet<CategoryProduct> CategoryProducts { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Bill> Bills { get; set; }
+        public DbSet<BillInfo> BillInfos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -17,7 +19,7 @@ namespace WebPhone.EF
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(u => u.Id).HasDefaultValueSql("NEWID()");
-                entity.Property(u => u.UserName).HasMaxLength(100);
+                entity.Property(u => u.UserName).HasMaxLength(200);
                 entity.Property(u => u.Email).HasMaxLength(100);
                 entity.Property(u => u.PasswordHash).HasMaxLength(200);
                 entity.Property(u => u.CreateAt).HasDefaultValueSql("(sysdatetime())");
@@ -48,7 +50,43 @@ namespace WebPhone.EF
                 entity.HasOne(p => p.CategoryProduct)
                     .WithMany(ct => ct.Products)
                     .HasForeignKey(p => p.CategoryId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<Bill>(entity =>
+            {
+                entity.Property(b => b.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(b => b.CustomerName).HasMaxLength(200);
+                entity.Property(b => b.EmploymentName).HasMaxLength(200);
+                entity.Property(b => b.EmploymentName).HasMaxLength(200);
+                entity.Property(b => b.CreateAt).HasDefaultValueSql("(sysdatetime())");
+
+                entity.HasOne(b => b.Customer)
+                    .WithMany(u => u.CustomerBills)
+                    .HasForeignKey(b => b.CustomerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(b => b.Employment)
+                    .WithMany(u => u.EmploymentBills)
+                    .HasForeignKey(b => b.EmploymentId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<BillInfo>(entity =>
+            {
+                entity.Property(bi => bi.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(bi => bi.ProductName).HasMaxLength(500);
+                entity.Property(bi => bi.CreateAt).HasDefaultValueSql("(sysdatetime())");
+
+                entity.HasOne(bi => bi.Bill)
+                    .WithMany(b => b.BillInfos)
+                    .HasForeignKey(bi => bi.BillId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(bi => bi.Product)
+                    .WithMany(p => p.BillInfos)
+                    .HasForeignKey(bi => bi.ProductId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
 
