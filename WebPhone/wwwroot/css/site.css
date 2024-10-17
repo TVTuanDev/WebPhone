@@ -33,7 +33,7 @@ body {
     visibility: inherit;
 }
 
-#suggestions {
+.suggestions {
     width: 300px;
     top: 50px;
     max-height: 400px;

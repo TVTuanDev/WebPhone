@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Thêm mới hóa đơn";
+    var customers = ViewBag.Customers as List<User> ?? new List<User>();
     var products = ViewBag.Products as List<Product> ?? new List<Product>();
 }
 
@@ -11,45 +12,55 @@
 <hr />
 <div class="row justify-content-between">
     <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form class="search-customer-name">
             <div class="form-group">
-                <label asp-for="CustomerId" class="control-label"></label>
-                <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId">
-                    <option value="">-- Không có --</option>
-                </select>
+                <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#createCustomer">
+                    Thêm khách hàng
+                </button>
             </div>
-            <div class="form-group">
-                <label asp-for="CustomerName" class="control-label"></label>
-                <input asp-for="CustomerName" class="form-control" />
-                <span asp-validation-for="CustomerName" class="text-danger"></span>
+            <div class="form-group mt-3 d-flex position-relative" style="z-index: 9999;">
+                <input class="form-control me-2 search-input" type="search" id="searchCustomer" placeholder="Tìm kiếm khách hàng..." aria-label="Search" autocomplete="off">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+                <div class="position-absolute bg-white border border-secondary rounded shadow suggestions">
+                    <ul class="list-group">
+                        @foreach (var customer in customers)
+                        {
+                            <li class="list-group-item"
+                                data-id="@customer.Id"
+                                data-email="@customer.Email"
+                                data-phoneNumber="@customer.PhoneNumber"
+                                data-address="@customer.Address">
+                                @customer.UserName
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
+            <input type="hidden" name="idCustomer" />
+            <div class="d-flex justify-content-between mt-3">
+                <div>Tên khách hàng: </div>
+                <div class="customer-name"></div>
             </div>
-            <div class="form-group">
-                <label asp-for="Discount" class="control-label"></label>
-                <input asp-for="Discount" class="form-control" />
-                <span asp-validation-for="Discount" class="text-danger"></span>
+            <div class="d-flex justify-content-between mt-3">
+                <div>Email: </div>
+                <div class="customer-email"></div>
             </div>
-            <div class="form-group">
-                <label asp-for="TotalPrice" class="control-label"></label>
-                <input asp-for="TotalPrice" class="form-control" />
-                <span asp-validation-for="TotalPrice" class="text-danger"></span>
+            <div class="d-flex justify-content-between mt-3">
+                <div>Số điện thoại: </div>
+                <div class="customer-phoneNumber"></div>
             </div>
-            <div class="form-group mt-3">
-                <input type="submit" value="Create" class="btn btn-primary" />
+            <div class="d-flex justify-content-between mt-3">
+                <div>Địa chỉ: </div>
+                <div class="customer-address"></div>
             </div>
         </form>
     </div>
     <div class="col-md-8">
         <div style="width: 400px;">
-            <form class="d-flex position-relative search-name">
-                <input class="form-control me-2" type="search" id="searchInput" placeholder="Tìm kiếm sản phẩm..." aria-label="Search" autocomplete="off">
+            <form class="d-flex position-relative search-name" style="z-index: 999;">
+                <input class="form-control me-2 search-input" type="search" id="searchInput" placeholder="Tìm kiếm sản phẩm..." aria-label="Search" autocomplete="off">
                 <button class="btn btn-outline-success" type="submit">Search</button>
-                <div id="suggestions" class="position-absolute bg-white border border-secondary rounded shadow">
+                <div class="position-absolute bg-white border border-secondary rounded shadow suggestions">
                     <ul class="list-group">
                         @foreach (var product in products)
                         {
@@ -85,6 +96,10 @@
             <div class="col-md-8"></div>
             <div class="col-md-4">
                 <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Giá: </label>
+                    <label class="col-sm-8 col-form-label text-end price-end"></label>
+                </div>
+                <div class="form-group">
                     <div class="d-flex radio-discount">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="Discount" id="percent" checked>
@@ -110,7 +125,16 @@
                     <label class="col-sm-4 col-form-label">Tổng tiền: </label>
                     <label class="col-sm-8 col-form-label text-end total-price-end"></label>
                 </div>
+                <div class="form-group row mt-3">
+                    <label class="col-sm-4 col-form-label wrap-none">Thanh toán: </label>
+                    <div class="col-sm-8 pe-0">
+                        <input type="text" class="form-control text-end" id="payment-price" autocomplete="off" />
+                    </div>
+                </div>
             </div>
+        </div>
+        <div class="form-group mt-3 float-end">
+            <button class="btn btn-success" id="createBill">Tạo hóa đơn</button>
         </div>
     </div>
 </div>
@@ -119,23 +143,60 @@
     <a asp-action="Index">Quay lại</a>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="createCustomer" tabindex="-1" aria-labelledby="createCustomerLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCustomerLabel">Thêm khách hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-customer">
+                    <div class="form-group">
+                        <label class="control-label">Tên khách hàng</label>
+                        <input class="form-control" type="text" name="CustomerName"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Email</label>
+                        <input class="form-control" type="text" name="Email" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Số điện thoại</label>
+                        <input class="form-control" type="text" name="PhoneNumber" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Địa chỉ</label>
+                        <input class="form-control" type="text" name="Address" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" name="creareCustomer">Thêm mới</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $(function () {
             const Toast = window.globalVariable;
             let timeOutSearch;
+            let timeOutSearchCustomer;
             let count = 0;
-            let discountInput;
+            let discountInput = 0;
             let btnPercent = $('.form-check input#percent');
             let btnMoney = $('.form-check input#money');
             let totalPriceValue = 0;
 
-            $('#searchInput').on('focus', function () {
-                $('#suggestions').show();
+            $('.search-input').on('focus', function () {
+                $(this).parent().find('.suggestions').show();
             });
 
-            $('#searchInput').on('blur', function () {
-                $('#suggestions').hide();
+            $('.search-input').on('blur', function () {
+                $(this).parent().find('.suggestions').hide();
             });
 
             $('#searchInput').on('input', function () {
@@ -163,8 +224,37 @@
                 FilterProduct(value);
             });
 
-            $('#suggestions').on('mousedown', '.list-group-item', function () {
+            $('form.search-name .suggestions').on('mousedown', '.list-group-item', function () {
                 AddProductInTable($(this));
+            });
+
+            $('#searchCustomer').on('input', function () {
+                const value = $(this).val().trim();
+
+                if (timeOutSearchCustomer) {
+                    clearTimeout(timeOutSearchCustomer);
+                }
+
+                timeOutSearchCustomer = setTimeout(function () {
+                    $('#searchCustomer').val(value);
+                    FilterCustomer(value);
+                }, 1000);
+            });
+
+            $('form.search-customer-name').on('submit', function (e) {
+                e.preventDefault();
+
+                const value = $(this).find('#searchCustomer').val().trim();
+
+                if (timeOutSearchCustomer) {
+                    clearTimeout(timeOutSearchCustomer);
+                }
+
+                FilterCustomer(value);
+            });
+
+            $('form.search-customer-name .suggestions').on('mousedown', '.list-group-item', function () {
+                AddInfoCustomer($(this));
             });
 
             $('table.table tbody').on('click', 'button.btn-danger', function () {
@@ -191,6 +281,7 @@
                         count = tbodyEle.find('tr').length;
 
                         TotalPrice();
+                        DiscountTotalPrice();
                     }
                 });
             });
@@ -219,6 +310,15 @@
                 DiscountTotalPrice();
             });
 
+            $('input#payment-price').on('input', function () {
+                let value = $(this).val();
+
+                value = value.replace(/[^0-9]/g, '');
+
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                $(this).val(value);
+            });
+
             $('table.table tbody').on('input', 'tr .quantity input', function () {
                 let value = $(this).val();
                 value = value.replace(/[^0-9]/g, '');
@@ -228,6 +328,7 @@
                     $(this).val(1); 
                 }
                 TotalPrice();
+                DiscountTotalPrice();
             });
 
             $('table.table tbody').on('blur', 'tr .quantity input', function () {
@@ -235,6 +336,7 @@
                     $(this).val(1);
                 }
                 TotalPrice();
+                DiscountTotalPrice();
             });
 
             $('.radio-discount input[name=Discount]').click(function () {
@@ -245,17 +347,116 @@
                 DiscountTotalPrice();
             });
 
+            $('#createCustomer button[name=creareCustomer]').click(function () {
+                let formCreateCustomer = $('#create-customer').serialize();
+
+                console.log(formCreateCustomer);
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("CreateCustomer", "AdminAccount", new { area = "Accounts" })',
+                    data: formCreateCustomer,
+                    success: function (res) {
+                        if (res.success === false) {
+                            Toast.fire({
+                                icon: 'error',
+                                text: `${res.message}`
+                            });
+                            return;
+                        }
+
+                        let customer = res.data;
+
+                        let parent = $('form.search-customer-name');
+                        let customerIdInput = parent.find('input[name=idCustomer]');
+                        let userNameEle = parent.find('.customer-name');
+                        let emailEle = parent.find('.customer-email');
+                        let phoneNumberEle = parent.find('.customer-phoneNumber');
+                        let addressEle = parent.find('.customer-address');
+
+                        customerIdInput.val(customer.id);
+                        userNameEle.text(customer.customerName);
+                        emailEle.text(customer.email);
+                        phoneNumberEle.text(customer.phoneNumber);
+                        addressEle.text(customer.address);
+
+                        $('#createCustomer').modal('hide');
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.error('Lỗi: ' + error);
+                        console.error('Mã trạng thái: ' + xhr.status);
+                        console.error('Chi tiết lỗi: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            $('#createBill').click(function () {
+                let customerId = $('form.search-customer-name input[name=idCustomer]');
+                let listProduct = $('table.table tbody tr');
+                let productIds = [];
+                let quantities = [];
+                let discountStyle = $('.radio-discount input#percent').is(':checked') ? 0 : 1;
+                let discountValue = parseInt($('input#discount').val().replace(/[^0-9]/g, ''));
+                let paymentValue = parseInt($('input#payment-price').val().replace(/[^0-9]/g, ''));
+
+                discountValue = discountValue ? discountValue : 0;
+
+                if (customerId.val() === '' || listProduct.length < 1) {
+                    Toast.fire({
+                        icon: 'error',
+                        text: 'Vui lòng nhập đầy đủ thông tin'
+                    });
+
+                    return;
+                }
+
+                listProduct.each(function () {
+                    productIds.push($(this).find('input[name=idProduct]').val());
+                    quantities.push($(this).find('.quantity input').val());
+                });
+
+                let formData = {
+                    CustomerId: customerId.val(),
+                    DiscountStyle: discountStyle,
+                    DiscountValue:discountValue,
+                    ProductId: productIds,
+                    Quantities: quantities,
+                    PaymentValue: paymentValue,
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Create")',
+                    data: formData,
+                    success: function (res) {
+                        if (res.success === false) {
+                            Toast.fire({
+                                icon: 'error',
+                                text: `${res.message}`
+                            });
+                            return;
+                        }
+
+                        window.location.href = res.data;
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.error('Lỗi: ' + error);
+                        console.error('Mã trạng thái: ' + xhr.status);
+                        console.error('Chi tiết lỗi: ' + xhr.responseText);
+                    }
+                });
+            });
+
             function FilterProduct(name) {
                 name = name.trim();
-
-                if (!name) return;
 
                 $.ajax({
                     type: 'POST',
                     url: '@Url.Action("FilterProduct", "Products", new { area = "Products" })',
                     data: { name },
                     success: function (res) {
-                        $('#suggestions .list-group').empty();
+                        $('form.search-name .suggestions .list-group').empty();
 
                         $.each(res.data, function (index, product) {
 
@@ -269,7 +470,7 @@
                                         ${product.productName}
                                     </li>`;
 
-                            $('#suggestions .list-group').append(li);
+                            $('form.search-name .suggestions .list-group').append(li);
                         });
                     },
                     error: function (xhr, status, error) {
@@ -278,7 +479,7 @@
                         console.error('Mã trạng thái: ' + xhr.status);
                         console.error('Chi tiết lỗi: ' + xhr.responseText);
                     }
-                })
+                });
             }
 
             function AddProductInTable(product) {
@@ -288,8 +489,20 @@
                 let price = product.data('price');
                 let discount = product.data('discount');
 
+                for (let item of $('table.table tbody tr')) {
+                    if (id === $(item).find('input[name=idProduct]').val()) {
+                        let quantityValue = parseInt($(item).find('.quantity input').val());
+                        $(item).find('.quantity input').val(++quantityValue);
+
+                        TotalPrice();
+                        DiscountTotalPrice();
+
+                        return false;
+                    }
+                }
+
                 var td = `<tr>
-                            <input type="hidden" value="${id}" />
+                            <input type="hidden" value="${id}" name="idProduct" />
                             <th scope="row" class="text-center">${++count}</th>
                             <td class="text-center">
                                 <img src="${avatar}" alt="Avatar" style="width:80px; height:auto;" />
@@ -306,6 +519,7 @@
                 $('table.table tbody').append(td);
 
                 TotalPrice();
+                DiscountTotalPrice();
             }
 
             function TotalPrice(){
@@ -321,6 +535,7 @@
                     totalPriceValue += discount ? discount * quantity : price * quantity;
                 });
 
+                $('.price-end').text(totalPriceValue.toLocaleString('vi-VN') + ' đ');
                 $('.total-price-end').text(totalPriceValue.toLocaleString('vi-VN') + ' đ');
             };
 
@@ -339,11 +554,59 @@
                     discountTotal = discountInput;
                 }
 
+                discountTotal = discountTotal > totalPriceValue ? totalPriceValue : discountTotal;
                 totalPriceEnd = totalPriceEnd < 0 ? 0 : totalPriceEnd;
 
                 $('.discount-end').text(`- ${discountTotal.toLocaleString('vi-VN')} đ`);
                 $('.total-price-end').text(totalPriceEnd.toLocaleString('vi-VN') + ' đ');
             };
+
+            function AddInfoCustomer(element) {
+                let parent = element.closest('.search-customer-name');
+                let customerIdInput = parent.find('input[name=idCustomer]');
+                let userNameEle = parent.find('.customer-name');
+                let emailEle = parent.find('.customer-email');
+                let phoneNumberEle = parent.find('.customer-phoneNumber');
+                let addressEle = parent.find('.customer-address');
+
+                customerIdInput.val(element.data('id'));
+                userNameEle.text(element.text());
+                emailEle.text(element.data('email'));
+                phoneNumberEle.text(element.data('phonenumber'));
+                addressEle.text(element.data('address'));
+            }
+
+            function FilterCustomer(name) {
+                name = name.trim();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("FilterCusomterByName", "AdminAccount", new { area = "Accounts" })',
+                    data: { name },
+                    success: function (res) {
+                        $('form.search-customer-name .suggestions .list-group').empty();
+
+                        $.each(res.data, function (index, customer) {
+
+                            var li = `<li class="list-group-item"
+                                        data-id="${customer.id}"
+                                        data-email="${customer.email}"
+                                        data-phoneNumber="${customer.phoneNumber}"
+                                        data-address="${customer.address}">
+                                        ${customer.userName}
+                                    </li>`;
+
+                            $('form.search-customer-name .suggestions .list-group').append(li);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.error('Lỗi: ' + error);
+                        console.error('Mã trạng thái: ' + xhr.status);
+                        console.error('Chi tiết lỗi: ' + xhr.responseText);
+                    }
+                });
+            }
         });
     </script>
 }

@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Danh mục hóa đơn";
+    int count = 0;
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -12,30 +13,21 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CustomerName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EmploymentName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Discount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalPrice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreateAt)
-            </th>
-            <th></th>
+            <th>STT</th>
+            <th>Tên khách hàng</th>
+            <th>Tên nhân viên</th>
+            <th>Giá</th>
+            <th>Giảm giá</th>
+            <th>Tổng tiền</th>
+            <th>Đã thanh toán</th>
+            <th>Thời gian tạo</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>@(++count)</td>
             <td>
                 @Html.DisplayFor(modelItem => item.CustomerName)
             </td>
@@ -43,20 +35,23 @@
                 @Html.DisplayFor(modelItem => item.EmploymentName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Price)
+                @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Price)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Discount)
+                @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Discount)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.TotalPrice)
+                @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.TotalPrice)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.CreateAt)
+                @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.PaymentPrice)
+            </td>
+            <td>
+                @item.CreateAt.ToString("dd/MM/yyyy HH:mm:ss")
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
+                <a asp-action="Export" asp-route-id="@item.Id">Chi tiết</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
             </td>
         </tr>

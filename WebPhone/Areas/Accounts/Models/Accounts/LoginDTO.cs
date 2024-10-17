@@ -12,7 +12,6 @@ namespace WebPhone.Areas.Accounts.Models.Accounts
         [Display(Name = "Mật khẩu")]
         [Required(ErrorMessage = "{0} bắt buộc nhập")]
         [DataType(DataType.Password)]
-        [StringLength(20, MinimumLength = 6, ErrorMessage = "{0} phải dài từ {2} đến {1} ký tự")]
         public string Password { get; set; } = null!;
 
         [Display(Name = "Ghi nhớ đăng nhập")]

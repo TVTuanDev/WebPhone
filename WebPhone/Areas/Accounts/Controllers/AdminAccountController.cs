@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -70,7 +71,7 @@ namespace WebPhone.Areas.Accounts.Controllers
                 countPage = (int)Math.Ceiling((double)total / ITEM_PER_PAGE);
                 countPage = countPage < 1 ? 1 : countPage;
                 page = page > countPage ? countPage : page;
-                userList = await  _context.Users
+                userList = await _context.Users
                             .Skip((page - 1) * ITEM_PER_PAGE)
                             .Take(ITEM_PER_PAGE)
                             .Select(u => new User
@@ -99,6 +100,8 @@ namespace WebPhone.Areas.Accounts.Controllers
                 UserName = u.UserName,
                 Email = u.Email,
                 EmailConfirmed = u.EmailConfirmed,
+                PhoneNumber = u.PhoneNumber,
+                Address = u.Address,
                 CreateAt = u.CreateAt,
                 UpdateAt = u.UpdateAt,
             }).FirstOrDefaultAsync(u => u.Id == id);
@@ -141,6 +144,8 @@ namespace WebPhone.Areas.Accounts.Controllers
                     UserName = userDTO.UserName,
                     Email = userDTO.Email,
                     EmailConfirmed = true,
+                    PhoneNumber = userDTO.PhoneNumber,
+                    Address = userDTO.Address,
                     PasswordHash = PasswordManager.HashPassword(userDTO.Password)
                 };
 
@@ -175,6 +180,8 @@ namespace WebPhone.Areas.Accounts.Controllers
                 UserName = user.UserName,
                 Email = user.Email,
                 EmailConfirmed = user.EmailConfirmed,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                Address = user.Address ?? string.Empty,
             };
 
             return View(userDTO);
@@ -207,6 +214,8 @@ namespace WebPhone.Areas.Accounts.Controllers
 
                 user.UserName = userDTO.UserName;
                 user.EmailConfirmed = userDTO.EmailConfirmed;
+                user.PhoneNumber = userDTO.PhoneNumber;
+                user.Address = userDTO.Address;
                 user.UpdateAt = DateTime.UtcNow;
 
                 // Có sự thay đổi về email
@@ -255,6 +264,8 @@ namespace WebPhone.Areas.Accounts.Controllers
                     UserName = u.UserName,
                     Email = u.Email,
                     EmailConfirmed = u.EmailConfirmed,
+                    PhoneNumber = u.PhoneNumber,
+                    Address = u.Address,
                     CreateAt = u.CreateAt,
                     UpdateAt = u.UpdateAt
                 })
@@ -296,6 +307,8 @@ namespace WebPhone.Areas.Accounts.Controllers
             {
                 Random random = new Random();
 
+                string[] address = { "Hà Nội", "Hồ Chí Minh", "Thanh Hóa", "Lạng Sơn", "Quảng Ninh", "Bắc Ninh", "Cần Thơ" };
+
                 var countUser = await _context.Users.CountAsync();
 
                 for (int i = 1; i <= count; i++)
@@ -304,6 +317,8 @@ namespace WebPhone.Areas.Accounts.Controllers
                     {
                         UserName = $"Account {++countUser}",
                         Email = $"emailclone{countUser}@gmail.com",
+                        PhoneNumber = $"0{RandomGenerator.RandomNumber(9)}",
+                        Address = address[random.Next(address.Length)],
                         PasswordHash = PasswordManager.HashPassword("123456"),
                     };
 
@@ -360,5 +375,93 @@ namespace WebPhone.Areas.Accounts.Controllers
             }
         }
         #endregion
+
+        [HttpPost("filter-name")]
+        public async Task<JsonResult> FilterCusomterByName(string name)
+        {
+            name = string.IsNullOrEmpty(name) ? "" : name;
+
+            var users = await _context.Users
+                            .Where(u => u.UserName.Contains(name))
+                            .Take(100)
+                            .Select(u => new User
+                            {
+                                Id = u.Id,
+                                UserName = u.UserName,
+                                Email = u.Email,
+                                PhoneNumber = u.PhoneNumber,
+                                Address = u.Address,
+                            })
+                            .ToListAsync();
+
+            return Json(new
+            {
+                Success = true,
+                Message = "Success",
+                Data = users
+            });
+        }
+
+        public async Task<JsonResult> CreateCustomer(CustomerDTO customerDTO)
+        {
+            if(!ModelState.IsValid)
+                return Json(new
+                {
+                    Success = false,
+                    Message = "Vui lòng nhập đầy đủ thông tin"
+                });
+
+            if (!CheckRegexMail(customerDTO.Email))
+                return Json(new
+                {
+                    Success = false,
+                    Message = "Vui lòng nhập đúng định dạng email"
+                });
+
+            if (!CheckRegexPhoneNumber(customerDTO.PhoneNumber))
+                return Json(new
+                {
+                    Success = false,
+                    Message = "Số điện thoại không hợp lệ"
+                });
+
+            var user = new User
+            {
+                UserName = customerDTO.CustomerName,
+                Email = customerDTO.Email,
+                PhoneNumber = customerDTO.PhoneNumber,
+                Address = customerDTO.Address,
+                PasswordHash = PasswordManager.HashPassword("123456"),
+                EmailConfirmed = true
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            customerDTO.Id = user.Id;
+
+            return Json(new
+            {
+                Success = true,
+                Message = "Success",
+                Data = customerDTO
+            });
+        }
+
+        private bool CheckRegexMail(string email)
+        {
+            string pattern = @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$";
+            Regex regex = new Regex(pattern);
+            if (regex.IsMatch(email)) return true;
+            return false;
+        }
+
+        private bool CheckRegexPhoneNumber(string phoneNumber)
+        {
+            string pattern = @"^0[3|5|7|8|9][0-9]{8}$";
+            Regex regex = new Regex(pattern);
+            if (regex.IsMatch(phoneNumber)) return true;
+            return false;
+        }
     }
 }

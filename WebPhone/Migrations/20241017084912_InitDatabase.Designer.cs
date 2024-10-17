@@ -12,8 +12,8 @@ using WebPhone.EF;
 namespace WebPhone.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241012093924_UpdateTableUser_v1")]
-    partial class UpdateTableUser_v1
+    [Migration("20241017084912_InitDatabase")]
+    partial class InitDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,102 @@ namespace WebPhone.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+
+            modelBuilder.Entity("WebPhone.EF.Bill", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("CreateAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(sysdatetime())");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Discount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EmploymentName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PaymentPrice")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalPrice")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("EmploymentId");
+
+                    b.ToTable("Bills");
+                });
+
+            modelBuilder.Entity("WebPhone.EF.BillInfo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<Guid>("BillId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreateAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(sysdatetime())");
+
+                    b.Property<int?>("Discount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("BillInfos");
+                });
 
             modelBuilder.Entity("WebPhone.EF.CategoryProduct", b =>
                 {
@@ -68,7 +164,7 @@ namespace WebPhone.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreateAt")
@@ -111,6 +207,10 @@ namespace WebPhone.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<DateTime>("CreateAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -129,20 +229,63 @@ namespace WebPhone.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("UserName");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("WebPhone.EF.Bill", b =>
+                {
+                    b.HasOne("WebPhone.EF.User", "Customer")
+                        .WithMany("CustomerBills")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WebPhone.EF.User", "Employment")
+                        .WithMany("EmploymentBills")
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Employment");
+                });
+
+            modelBuilder.Entity("WebPhone.EF.BillInfo", b =>
+                {
+                    b.HasOne("WebPhone.EF.Bill", "Bill")
+                        .WithMany("BillInfos")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebPhone.EF.Product", "Product")
+                        .WithMany("BillInfos")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Bill");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("WebPhone.EF.CategoryProduct", b =>
@@ -160,10 +303,14 @@ namespace WebPhone.Migrations
                     b.HasOne("WebPhone.EF.CategoryProduct", "CategoryProduct")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CategoryProduct");
+                });
+
+            modelBuilder.Entity("WebPhone.EF.Bill", b =>
+                {
+                    b.Navigation("BillInfos");
                 });
 
             modelBuilder.Entity("WebPhone.EF.CategoryProduct", b =>
@@ -171,6 +318,18 @@ namespace WebPhone.Migrations
                     b.Navigation("CateProductChildren");
 
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("WebPhone.EF.Product", b =>
+                {
+                    b.Navigation("BillInfos");
+                });
+
+            modelBuilder.Entity("WebPhone.EF.User", b =>
+                {
+                    b.Navigation("CustomerBills");
+
+                    b.Navigation("EmploymentBills");
                 });
 #pragma warning restore 612, 618
         }

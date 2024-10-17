@@ -21,8 +21,11 @@ namespace WebPhone.EF
                 entity.Property(u => u.Id).HasDefaultValueSql("NEWID()");
                 entity.Property(u => u.UserName).HasMaxLength(200);
                 entity.Property(u => u.Email).HasMaxLength(100);
+                entity.Property(u => u.PhoneNumber).HasMaxLength(15);
+                entity.Property(u => u.Address).HasMaxLength(500);
                 entity.Property(u => u.PasswordHash).HasMaxLength(200);
                 entity.Property(u => u.CreateAt).HasDefaultValueSql("(sysdatetime())");
+                entity.HasIndex(u => u.UserName);
                 entity.HasIndex(u => u.Email).IsUnique();
             });
 

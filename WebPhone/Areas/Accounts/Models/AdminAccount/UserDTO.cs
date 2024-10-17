@@ -15,6 +15,15 @@ namespace WebPhone.Areas.Accounts.Models.AdminAccount
         [RegularExpression(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$", ErrorMessage = "Vui lòng nhập đúng định dạng email")]
         public string Email { get; set; } = null!;
 
+        [Display(Name = "Số điện thoại")]
+        [Required(ErrorMessage = "{0} bắt buộc nhập")]
+        [RegularExpression(@"^0[3|5|7|8|9][0-9]{8}$", ErrorMessage = "Vui lòng nhập đúng định dạng {0}")]
+        public string PhoneNumber { get; set; } = null!;
+
+        [Display(Name = "Địa chỉ")]
+        [Required(ErrorMessage = "{0} bắt buộc nhập")]
+        public string Address { get; set; } = null!;
+
         [Display(Name = "Mật khẩu")]
         //[Required(ErrorMessage = "{0} bắt buộc nhập")]
         [StringLength(20, MinimumLength = 6, ErrorMessage = "{0} phải từ {2} đến {1} ký tự")]

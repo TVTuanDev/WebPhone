@@ -389,6 +389,8 @@ namespace WebPhone.Areas.Products.Controllers
         [HttpPost("filter")]
         public async Task<JsonResult> FilterProduct(string name)
         {
+            name = string.IsNullOrEmpty(name) ? "" : name;
+
             var products = await _context.Products
                             .Where(p => p.ProductName.Contains(name))
                             .Take(100)
@@ -401,8 +403,6 @@ namespace WebPhone.Areas.Products.Controllers
                                 Discount = p.Discount,
                             })
                             .ToListAsync();
-
-            //var json = JsonConvert.SerializeObject(products);
 
             return Json(new
             {

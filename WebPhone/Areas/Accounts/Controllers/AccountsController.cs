@@ -76,6 +76,8 @@ namespace WebPhone.Areas.Accounts.Controllers
                 {
                     UserName = registerDTO.UserName,
                     Email = registerDTO.Email,
+                    PhoneNumber = registerDTO.PhoneNumber,
+                    Address = registerDTO.Address,
                     PasswordHash = PasswordManager.HashPassword(registerDTO.Password)
                 };
 
