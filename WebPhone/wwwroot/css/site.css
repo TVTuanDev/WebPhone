@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -47,4 +47,11 @@ body {
 
 .list-group-item:hover {
     background-color: #f1f1f1;
+}
+
+/* Định dạng giao diện input ấn */
+@media print {
+    .no-print {
+        display: none;
+    }
 }

@@ -264,7 +264,8 @@ namespace WebPhone.Areas.Products.Controllers
                 });
                 if(cateProduct.CateProductChildren.Count > 0)
                 {
-                    CreateSelectItem(cateProduct.CateProductChildren.ToList(), des, ++level);
+                    int levelChild = level + 1;
+                    CreateSelectItem(cateProduct.CateProductChildren.ToList(), des, levelChild);
                 }
             } 
         }

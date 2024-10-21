@@ -11,14 +11,14 @@
 <h4>Hóa đơn</h4>
 <hr />
 <div class="row justify-content-between">
-    <div class="col-md-4">
+    <div class="col-md-4 mb-3">
         <form class="search-customer-name">
             <div class="form-group">
                 <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#createCustomer">
                     Thêm khách hàng
                 </button>
             </div>
-            <div class="form-group mt-3 d-flex position-relative" style="z-index: 9999;">
+            <div class="form-group mt-3 d-flex position-relative" style="z-index: 1000;">
                 <input class="form-control me-2 search-input" type="search" id="searchCustomer" placeholder="Tìm kiếm khách hàng..." aria-label="Search" autocomplete="off">
                 <button class="btn btn-outline-success" type="submit">Search</button>
                 <div class="position-absolute bg-white border border-secondary rounded shadow suggestions">
@@ -96,7 +96,7 @@
             <div class="col-md-8"></div>
             <div class="col-md-4">
                 <div class="form-group row">
-                    <label class="col-sm-4 col-form-label">Giá: </label>
+                    <label class="col-sm-4 col-form-label wrap-none">Tổng cộng: </label>
                     <label class="col-sm-8 col-form-label text-end price-end"></label>
                 </div>
                 <div class="form-group">
@@ -111,7 +111,7 @@
                         </div>
                     </div>
                     <div class="row pe-0">
-                        <label class="col-sm-4 col-form-label">Giảm giá</label>
+                        <label class="col-sm-4 col-form-label wrap-none">Giảm giá</label>
                         <div class="col-sm-8 pe-0">
                             <input type="text" class="form-control text-end" id="discount" autocomplete="off" />
                         </div>
@@ -122,7 +122,7 @@
                     <label class="col-sm-8 col-form-label text-end discount-end"></label>
                 </div>
                 <div class="form-group row">
-                    <label class="col-sm-4 col-form-label">Tổng tiền: </label>
+                    <label class="col-sm-4 col-form-label wrap-none">Tổng tiền: </label>
                     <label class="col-sm-8 col-form-label text-end total-price-end"></label>
                 </div>
                 <div class="form-group row mt-3">
@@ -288,6 +288,7 @@
 
             $('input#discount').on('input', function () {
                 let value = $(this).val();
+                let priceEnd = $('.price-end').text().replace(/[^0-9]/g, '');
 
                 // Xóa bỏ các ký tự không phải là số
                 value = value.replace(/[^0-9]/g, '');
@@ -297,9 +298,10 @@
                 if (btnPercent.is(':checked') && parseInt(value) > 100) {
                     value = 100;
                     discountInput = value;
-                }
-                else 
-                {
+                } else {
+                    if(parseInt(value) > parseInt(priceEnd)) {
+                        value = priceEnd;
+                    }
                     // Thêm dấu phân cách hàng nghìn
                     value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                 }
@@ -395,7 +397,7 @@
                 let listProduct = $('table.table tbody tr');
                 let productIds = [];
                 let quantities = [];
-                let discountStyle = $('.radio-discount input#percent').is(':checked') ? 0 : 1;
+                let discountStyle = $('.radio-discount input#percent').is(':checked') ? 'Percent' : 'Money';
                 let discountValue = parseInt($('input#discount').val().replace(/[^0-9]/g, ''));
                 let paymentValue = parseInt($('input#payment-price').val().replace(/[^0-9]/g, ''));
 
@@ -418,7 +420,7 @@
                 let formData = {
                     CustomerId: customerId.val(),
                     DiscountStyle: discountStyle,
-                    DiscountValue:discountValue,
+                    DiscountValue: discountValue,
                     ProductId: productIds,
                     Quantities: quantities,
                     PaymentValue: paymentValue,
@@ -501,22 +503,22 @@
                     }
                 }
 
-                var td = `<tr>
+                var tr = `<tr>
                             <input type="hidden" value="${id}" name="idProduct" />
                             <th scope="row" class="text-center">${++count}</th>
                             <td class="text-center">
                                 <img src="${avatar}" alt="Avatar" style="width:80px; height:auto;" />
                             </td>
                             <td>${name}</td>
-                                <td class="price-item" data-price="${price}">${price.toLocaleString('vi-VN')} đ</td>
-                                <td class="discount-item" data-discount="${discount}">${discount ? discount.toLocaleString('vi-VN') + ' đ' : ''}</td>
+                            <td class="price-item" data-price="${price}">${price.toLocaleString('vi-VN')} đ</td>
+                            <td class="discount-item" data-discount="${discount}">${discount ? discount.toLocaleString('vi-VN') + ' đ' : ''}</td>
                             <td class="quantity">
                                 <input type="number" class="form-control" value="1" min="1" />
                             </td>
                             <td class="text-center"><button class="btn btn-danger">Xóa</button></td>
                         </tr>`;
 
-                $('table.table tbody').append(td);
+                $('table.table tbody').append(tr);
 
                 TotalPrice();
                 DiscountTotalPrice();

@@ -1,74 +1,468 @@
-﻿@model WebPhone.EF.Bill
-
+﻿@model Bill
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Cập nhật thông tin hóa đơn";
+    var products = ViewBag.Products as List<Product> ?? new List<Product>();
+    Guid.TryParse(Context.Request.Query["id"], out var paramBillId);
+    int count = 0;
 }
 
-<h1>Edit</h1>
+<div style="max-width: 767px; margin: 0 auto;">
+    <center><h1>NIỀM TIN</h1></center>
+    <center><p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi</p></center>
+    <center><h3>@ViewData["Title"]</h3></center>
 
-<h4>Bill</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="CustomerId" class="control-label"></label>
-                <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId"></select>
-                <span asp-validation-for="CustomerId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmploymentId" class="control-label"></label>
-                <select asp-for="EmploymentId" class="form-control" asp-items="ViewBag.EmploymentId"></select>
-                <span asp-validation-for="EmploymentId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CustomerName" class="control-label"></label>
-                <input asp-for="CustomerName" class="form-control" />
-                <span asp-validation-for="CustomerName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmploymentName" class="control-label"></label>
-                <input asp-for="EmploymentName" class="form-control" />
-                <span asp-validation-for="EmploymentName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Discount" class="control-label"></label>
-                <input asp-for="Discount" class="form-control" />
-                <span asp-validation-for="Discount" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TotalPrice" class="control-label"></label>
-                <input asp-for="TotalPrice" class="form-control" />
-                <span asp-validation-for="TotalPrice" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreateAt" class="control-label"></label>
-                <input asp-for="CreateAt" class="form-control" />
-                <span asp-validation-for="CreateAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UpdateAt" class="control-label"></label>
-                <input asp-for="UpdateAt" class="form-control" />
-                <span asp-validation-for="UpdateAt" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+    <input type="hidden" value="@Model.CustomerId" id="customerId" />
+    <input type="hidden" value="@Model.Id" id="billId" />
+    <div class="d-flex justify-content-between">
+        <div>Tên khách hàng: </div>
+        <div>@Model.Customer?.UserName</div>
+    </div>
+    <div class="d-flex justify-content-between my-3">
+        <div>Email: </div>
+        <div>@Model.Customer?.Email</div>
+    </div>
+    <div class="d-flex justify-content-between">
+        <div>Số điện thoại: </div>
+        <div>@Model.Customer?.PhoneNumber</div>
+    </div>
+    <div class="d-flex justify-content-between mt-3">
+        <div>Địa chỉ: </div>
+        <div>@Model.Customer?.Address</div>
+    </div>
+    <div style="width: 400px;" class="my-3">
+        <form class="d-flex position-relative search-name" style="z-index: 999;">
+            <input class="form-control me-2 search-input" type="search" id="searchInput" placeholder="Tìm kiếm sản phẩm..." aria-label="Search" autocomplete="off">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+            <div class="position-absolute bg-white border border-secondary rounded shadow suggestions">
+                <ul class="list-group">
+                    @foreach (var product in products)
+                    {
+                        <li class="list-group-item"
+                            data-id="@product.Id"
+                            data-price="@product.Price"
+                            data-discount="@product.Discount">
+                            @product.ProductName
+                        </li>
+                    }
+                </ul>
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
+    <table class="table table-bordered my-3">
+        <thead>
+            <tr>
+                <th class="text-center">STT</th>
+                <th class="text-center">Tên sản phẩm</th>
+                <th class="text-center" style="width: 100px;">Số lượng</th>
+                <th class="text-center">Đơn giá</th>
+                <th class="text-center">Thành tiền</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.BillInfos)
+            {
+                <tr>
+                    <input type="hidden" name="idProduct" value="@item.ProductId" />
+                    <td class="text-center">@(++count)</td>
+                    <td>@item.ProductName</td>
+                    <td class="text-center quantity">
+                        <input type="number" class="form-control" value="@item.Quantity" min="1" />
+                    </td>
+                    @if (item.Discount == null)
+                    {
+                        <td class="text-end">
+                            <span class="price-item" data-price="@item.Price">@String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Price)</span>
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="text-end">
+                            <span class="price-item" data-price="@item.Price"><s>@String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Price)</s></span>
+                            <br />
+                            <span class="discount-item" data-discount="@item.Discount">@String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Discount)</span>
+                        </td>
+                    }
+                    <td class="text-end totalPrice-tr" data-totalPriceTr="@((item.Discount ?? item.Price) * item.Quantity)">@String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", (item.Discount ?? item.Price) * item.Quantity)</td>
+                    <td class="text-center"><button class="btn btn-danger">Xóa</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col-md-8"></div>
+        <div class="col-md-4">
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label wrap-none">Tổng cộng: </label>
+                <label class="col-sm-8 col-form-label text-end price-end">
+                    @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", Model.Price)
+                </label>
+            </div>
+            <div class="form-group">
+                <div class="d-flex radio-discount">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="DiscountStyle" value="Percent" id="percent">
+                        <label class="form-check-label" for="percent">%</label>
+                    </div>
+                    <div class="form-check ms-3">
+                        <input class="form-check-input" type="radio" asp-for="DiscountStyle" value="Money" id="money">
+                        <label class="form-check-label" for="money">Tiền</label>
+                    </div>
+                </div>
+                <div class="row pe-0">
+                    <label class="col-sm-4 col-form-label wrap-none">Giảm giá</label>
+                    <div class="col-sm-8 pe-0">
+                        <input type="text" class="form-control text-end" asp-for="DiscountStyleValue" id="discount" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label"></label>
+                <label class="col-sm-8 col-form-label text-end discount-end">
+                    - @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", Model.Discount)
+                </label>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label wrap-none">Tổng tiền: </label>
+                <label class="col-sm-8 col-form-label text-end total-price-end">
+                    @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", Model.TotalPrice)
+                </label>
+            </div>
+            <div class="form-group row mt-3">
+                <label class="col-sm-4 col-form-label wrap-none">Thanh toán: </label>
+                <div class="col-sm-8 pe-0">
+                    <input type="text" class="form-control text-end" id="payment-price" autocomplete="off" value="@Model.PaymentPrice" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group mt-3 text-end">
+        <button class="btn btn-success" id="updateBill">Sửa hóa đơn</button>
+    </div>
+    <div>
+        <a asp-action="Index">Quay lại</a>
+    </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(function () {
+            const Toast = window.globalVariable;
+            let timeOutSearch;
+            let btnPercent = $('.form-check input#percent');
+            let btnMoney = $('.form-check input#money');
+            let discountInput = 0;
+            let totalPriceValue = $('.price-end').text().replace(/[^0-9]/g, '');
+
+            ConvertMoneyInput($('input#discount'));
+            ConvertMoneyInput($('input#payment-price'));
+
+            $('.search-input').on('focus', function () {
+                $(this).parent().find('.suggestions').show();
+            });
+
+            $('.search-input').on('blur', function () {
+                $(this).parent().find('.suggestions').hide();
+            });
+
+            $('input#discount').on('input', function () {
+                let value = $(this).val();
+                let priceEnd = $('.price-end').text().replace(/[^0-9]/g, '');
+
+                // Xóa bỏ các ký tự không phải là số
+                value = value.replace(/[^0-9]/g, '');
+
+                discountInput = value;
+
+                if (btnPercent.is(':checked') && parseInt(value) > 100) {
+                    value = 100;
+                    discountInput = value;
+                    $(this).val(value);
+                }
+                else {
+                    if (parseInt(value) > parseInt(priceEnd)) {
+                        value = priceEnd;
+                        $(this).val(value)
+                    }
+                    ConvertMoneyInput($(this));
+                }
+
+                TotalPrice();
+            });
+
+            $('input#payment-price').on('input', function () {
+                ConvertMoneyInput($(this));
+            });
+
+            $('.radio-discount input[name=DiscountStyle]').click(function () {
+                $('input#discount').val(0);
+
+                discountInput = 0;
+
+                TotalPrice();
+            });
+
+            $('form.search-name .suggestions').on('mousedown', '.list-group-item', function () {
+                AddProductInTable($(this));
+            });
+
+            $('#searchInput').on('input', function () {
+                const value = $(this).val().trim();
+
+                if (timeOutSearch) {
+                    clearTimeout(timeOutSearch);
+                }
+
+                timeOutSearch = setTimeout(function () {
+                    $('#searchInput').val(value);
+                    FilterProduct(value);
+                }, 1000);
+            });
+
+            $('form.search-name').on('submit', function (e) {
+                e.preventDefault();
+
+                const value = $(this).find('#searchInput').val().trim();
+
+                if (timeOutSearch) {
+                    clearTimeout(timeOutSearch);
+                }
+
+                FilterProduct(value);
+            });
+
+            $('table.table tbody').on('click', 'button.btn-danger', function () {
+                Swal.fire({
+                    title: "Bạn chắc chứ?",
+                    text: "Thao tác này sẽ không được hoàn lại!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Đồng ý",
+                    cancelButtonText: "Không"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let tbodyEle = $(this).closest('tbody');
+                        let trEle = $(this).closest('tr');
+
+                        trEle.remove();
+
+                        tbodyEle.find('tr').each(function (index) {
+                            $(this).find('th').text(++index);
+                        });
+
+                        count = tbodyEle.find('tr').length;
+                        TotalPrice();
+                    }
+                });
+            });
+
+            $('table.table tbody').on('input', '.quantity input', function () {
+                TotalPriceTr($(this));
+            });
+
+            $('#updateBill').click(function () {
+                let customerId = $('input#customerId');
+                let billId = $('input#billId');
+                let listProduct = $('table.table tbody tr');
+                let productIds = [];
+                let quantities = [];
+                let discountStyle = $('.radio-discount input#percent').is(':checked') ? 'Percent' : 'Money';
+                let discountValue = parseInt($('input#discount').val().replace(/[^0-9]/g, ''));
+                let paymentValue = parseInt($('input#payment-price').val().replace(/[^0-9]/g, ''));
+
+                discountValue = discountValue ? discountValue : 0;
+
+                if (customerId.val() === '' || listProduct.length < 1) {
+                    Toast.fire({
+                        icon: 'error',
+                        text: 'Vui lòng nhập đầy đủ thông tin'
+                    });
+
+                    return;
+                }
+
+                listProduct.each(function () {
+                    productIds.push($(this).find('input[name=idProduct]').val());
+                    quantities.push($(this).find('.quantity input').val());
+                });
+
+                let formData = {
+                    Id: billId.val(),
+                    CustomerId: customerId.val(),
+                    DiscountStyle: discountStyle,
+                    DiscountValue: discountValue,
+                    ProductId: productIds,
+                    Quantities: quantities,
+                    PaymentValue: paymentValue,
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Edit", new { id = paramBillId })',
+                    data: formData,
+                    success: function (res) {
+                        if (res.success === false) {
+                            Toast.fire({
+                                icon: 'error',
+                                text: `${res.message}`
+                            });
+                            return;
+                        }
+
+                        window.location.href = res.data;
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.error('Lỗi: ' + error);
+                        console.error('Mã trạng thái: ' + xhr.status);
+                        console.error('Chi tiết lỗi: ' + xhr.responseText);
+                    }
+                });
+            });
+
+            function ConvertMoneyInput(input) {
+                let value = input.val();
+
+                value = value.replace(/[^0-9]/g, '');
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+                input.val(value);
+            }
+
+            function AddProductInTable(product) {
+                let id = product.data('id');
+                let name = product.text();
+                let price = product.data('price');
+                let discount = product.data('discount');
+                let count = $('table.table tbody tr').length;
+                let tdPrice;
+                let totalPrice = 0;
+
+                for (let item of $('table.table tbody tr')) {
+                    if (id === $(item).find('input[name=idProduct]').val()) {
+                        let quantityValue = parseInt($(item).find('.quantity input').val());
+                        $(item).find('.quantity input').val(++quantityValue);
+
+                        TotalPriceTr($(item).find('.quantity input'));
+
+                        return false;
+                    }
+                }
+
+                if (discount === null) {
+                    tdPrice = `<span class="price-item" data-price="${price}">${price.toLocaleString('vi-VN')} ₫</span>`
+                    totalPrice = price;
+                } else {
+                    tdPrice = `<span class="price-item" data-price="${price}"><s>${price.toLocaleString('vi-VN')} ₫</s></span>
+                                <br>
+                                <span class="discount-item" data-discount="${discount}">${discount.toLocaleString('vi-VN')} ₫</span>
+                                `;
+                    totalPrice = discount;
+                }
+
+                var tr = `<tr>
+                            <input type="hidden" value="${id}" name="idProduct" />
+                            <td class="text-center">${++count}</td>
+                            <td>${name}</td>
+                            <td class="text-center quantity">
+                                <input type="number" class="form-control" value="1" min="1">
+                            </td>
+                            <td class="text-end">${tdPrice}</td>
+                                        <td class="text-end totalPrice-tr" data-totalPriceTr="${totalPrice}">${totalPrice.toLocaleString('vi-VN')} ₫</td>
+                            <td class="text-center"><button class="btn btn-danger">Xóa</button></td>
+                        </tr>`;
+
+                $('table.table tbody').append(tr);
+                TotalPrice();
+            }
+
+            function FilterProduct(name) {
+                name = name.trim();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("FilterProduct", "Products", new { area = "Products" })',
+                    data: { name },
+                    success: function (res) {
+                        $('form.search-name .suggestions .list-group').empty();
+
+                        $.each(res.data, function (index, product) {
+
+                            var li = `<li
+                                        class="list-group-item"
+                                        data-id="${product.id}"
+                                        data-price="${product.price}"
+                                        data-discount="${product.discount}"
+                                    >
+                                        ${product.productName}
+                                    </li>`;
+
+                            $('form.search-name .suggestions .list-group').append(li);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // Xử lý lỗi
+                        console.error('Lỗi: ' + error);
+                        console.error('Mã trạng thái: ' + xhr.status);
+                        console.error('Chi tiết lỗi: ' + xhr.responseText);
+                    }
+                });
+            }
+
+            function TotalPrice(){
+                totalPriceValue = 0;
+
+                $('table.table tbody tr').each(function () {
+                    let price = $(this).find('.price-item').data('price');
+                    let discount = $(this).find('.discount-item').data('discount');
+                    let quantity = parseInt($(this).find('.quantity input').val());
+
+                    quantity = quantity ? quantity : 0;
+
+                    totalPriceValue += discount ? discount * quantity : price * quantity;
+                });
+                $('.price-end').text(totalPriceValue.toLocaleString('vi-VN') + ' ₫');
+                $('.total-price-end').text(totalPriceValue.toLocaleString('vi-VN') + ' ₫');
+
+                DiscountTotalPrice();
+            }
+
+            function DiscountTotalPrice() {
+                let totalPriceEnd = totalPriceValue;
+                let discountTotal = 0;
+
+                if (btnPercent.is(':checked')) {
+                    let pricePercentTotal = Math.ceil(totalPriceEnd / 100 * discountInput / 1000) * 1000;
+                    totalPriceEnd -= pricePercentTotal;
+                    discountTotal = pricePercentTotal;
+                }
+                else {
+                    discountInput = Math.ceil(discountInput / 1000) * 1000;
+                    totalPriceEnd -= discountInput;
+                    discountTotal = discountInput;
+                }
+
+                discountTotal = discountTotal > totalPriceValue ? totalPriceValue : discountTotal;
+                totalPriceEnd = totalPriceEnd < 0 ? 0 : totalPriceEnd;
+
+                $('.discount-end').text(`- ${discountTotal.toLocaleString('vi-VN')} ₫`);
+                $('.total-price-end').text(totalPriceEnd.toLocaleString('vi-VN') + ' ₫');
+            };
+
+            function TotalPriceTr(input){
+                let value = parseInt($(input).val());
+                let parent = $(input).closest('tr');
+                let price = parent.find('.price-item').data('price');
+                let discount = parent.find('.discount-item').data('discount');
+
+                let totalPriceTr = discount ? discount * value : price * value;
+
+                parent.find('.totalPrice-tr').text(totalPriceTr.toLocaleString('vi-VN') + ' ₫');
+
+                TotalPrice();
+            }
+        });
+    </script>
 }

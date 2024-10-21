@@ -67,12 +67,14 @@ namespace WebPhone.EF
                 entity.HasOne(b => b.Customer)
                     .WithMany(u => u.CustomerBills)
                     .HasForeignKey(b => b.CustomerId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false);
 
                 entity.HasOne(b => b.Employment)
                     .WithMany(u => u.EmploymentBills)
                     .HasForeignKey(b => b.EmploymentId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired(false);
             });
 
             modelBuilder.Entity<BillInfo>(entity =>

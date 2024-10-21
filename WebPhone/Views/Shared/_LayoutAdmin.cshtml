@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] == null ? "WebPhone" : ViewData["Title"])</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebPhone.styles.css" asp-append-version="true" />
+    <link href="~/lib/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body>
+    <main id="main" class="row">
+        <section class="nav-left col-2">
+            <div class="nav-left-top">
+                <!-- <img src="./img/logo.png" alt="Logo" /> -->
+                <!-- <p>IVY Moda</p> -->
+            </div>
+            <ul class="nav-left-main">
+                <li class="@(CheckUrl("Admin", "Index") ? "active" : "")">
+                    <a class="item-top" asp-action="Index" asp-controller="Admin">Dashboard</a>
+                </li>
+                <li class="@(CheckUrl("Role", "Index") ? "active" : "")">
+                    <a class="item-top" asp-action="Index" asp-controller="Role">Roles</a>
+                </li>
+                <li class="@(CheckUrl("UserAdmin", "Index") ? "active" : "")">
+                    <a class="item-top" asp-action="Index" asp-controller="UserAdmin">Users</a>
+                </li>
+                <li class="@(CheckUrl("Hotel") ? "active" : "")">
+                    <a class="item-top item-top-ls btn d-inline-flex align-items-start w-100 @(CheckUrl("Hotel") ? "open" : "")"
+                       data-bs-toggle="collapse"
+                       data-bs-target="#hotels-collapse"
+                       aria-expanded="@CheckUrl("Hotel")"
+                       aria-controls="products-collapse"
+                       href="javascript:void(0)">
+                        Khách sạn
+                    </a>
+                    <div class="collapse submenu @(CheckUrl("Hotel") ? "show" : "")" id="hotels-collapse">
+                        <ul>
+                            <li class="@(CheckUrl("Hotel", "CateHotelIndex") ? "active" : "")">
+                                <a class="btn d-inline-flex align-items-start w-100" asp-action="CateHotelIndex" asp-controller="Hotel">
+                                    Danh mục
+                                </a>
+                            </li>
+                            <li class="@(CheckUrl("Hotel", "UtilityIndex") ? "active" : "")">
+                                <a class="btn d-inline-flex align-items-start w-100" asp-action="UtilityIndex" asp-controller="Hotel">
+                                    Tiện ích
+                                </a>
+                            </li>
+                            <li class="@(CheckUrl("Hotel", "Index") ? "active" : "")">
+                                <a class="btn d-inline-flex align-items-start w-100" asp-action="Index" asp-controller="Hotel">
+                                    Khách sạn
+                                </a>
+                            </li>
+                            <li class="@(CheckUrl("Hotel", "RoomIndex") ? "active" : "")">
+                                <a class="btn d-inline-flex align-items-start w-100" asp-action="RoomIndex" asp-controller="Hotel">
+                                    Phòng
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="@(CheckUrl("Tour") ? "active" : "")">
+                    <a class="item-top item-top-ls btn d-inline-flex align-items-start w-100 @(CheckUrl("Tour") ? "open" : "")"
+                       data-bs-toggle="collapse"
+                       data-bs-target="#tour-collapse"
+                       aria-expanded="@CheckUrl("Tour")"
+                       aria-controls="products-collapse"
+                       href="javascript:void(0)">
+                        Du lịch
+                    </a>
+                    <div class="collapse submenu @(CheckUrl("Tour") ? "show" : "")" id="tour-collapse">
+                        <ul>
+                            <li class="@(CheckUrl("Tour", "CateTourIndex") ? "active" : "")">
+                                <a class="btn d-inline-flex align-items-start w-100" asp-action="CateTourIndex" asp-controller="Tour">
+                                    Danh mục
+                                </a>
+                            </li>
+                            <li class="@(CheckUrl("Tour", "Index") ? "active" : "")">
+                                <a class="btn d-inline-flex align-items-start w-100" asp-action="Index" asp-controller="Tour">
+                                    Tour
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="@(CheckUrl("Admin", "Revenue") ? "active" : "")">
+                    <a class="item-top" asp-action="Revenue" asp-controller="Admin">Doanh thu</a>
+                </li>
+            </ul>
+        </section>
+        <section class="right-content col-10 ps-4">
+            <div class="header-main d-flex align-items-center justify-content-between mt-3">
+                <h2 class="text-dark fw-bold"></h2>
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+            @RenderBody()
+            <div class="my-5"></div>
+            <div class="my-5"></div>
+        </section>
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/sweetalert2/sweetalert2.all.min.js"></script>
+    <script src="~/js/main.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
+    <script>
+        $(function () {
+            window.globalVariable = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                showCloseButton: true,
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+    @await Html.PartialAsync("_ToastPartial")
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>
+
+@functions {
+    public bool CheckUrl(string controller, string? action = null)
+    {
+        var checkAction = ViewContext.RouteData.Values["Action"]?.ToString() == action;
+
+        if (action is null)
+            checkAction = true;
+
+        return ViewContext.RouteData.Values["Controller"]?.ToString() == controller
+        && checkAction
+        ? true : false;
+    }
+}

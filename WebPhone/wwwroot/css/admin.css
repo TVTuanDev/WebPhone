@@ -1,0 +1,175 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /*font-family: "Montserrat", sans-serif;*/
+}
+
+html {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+body {
+  /*color: #6c6d70;*/
+  font-family: "Montserrat", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+body .row {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+img {
+  width: 100%;
+  height: auto;
+}
+
+a {
+  color: #333;
+  text-decoration: none;
+}
+
+ul {
+  padding-left: 0;
+}
+
+ul,
+li {
+  list-style: none;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.modal-open {
+  padding-right: 0 !important;
+}
+
+.btn-check:focus + .btn,
+.btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.nav-left {
+  background-color: #3a3b3e;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 250px;
+}
+
+.right-content {
+  margin-left: 250px;
+}
+
+.nav-left-top {
+  margin-top: 10px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.nav-left-top img {
+  width: 150px;
+  height: auto;
+  filter: invert(100%);
+}
+
+.row .nav-left a {
+  color: #fff;
+}
+
+.nav-left-main li a {
+  display: block;
+  padding: 10px;
+  border-radius: 15px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+.nav-left-main li .item-top {
+  transition: all 0.3s ease-in-out 0s;
+  position: relative;
+}
+
+.nav-left-main li .item-top-ls::after {
+  content: "\f107";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  transition: all 0.3s ease-in-out 0s;
+}
+
+.nav-left-main li .item-top-ls.open::after {
+  transform: rotate(180deg);
+  top: 13px;
+}
+
+.nav-left-main li.active > a,
+.nav-left-main li a:hover {
+  background-color: #000;
+}
+
+.nav-left-main li .submenu {
+  margin-left: 20px;
+}
+
+.header-main .info-user img {
+  width: 40px;
+  height: auto;
+  border-radius: 50%;
+}
+
+.content .main-content .table thead th:first-child,
+.content .main-content .table tbody td:first-child {
+  width: 50px;
+}
+
+.content .main-content .table thead th:last-child,
+.content .main-content .table tbody td:last-child {
+  width: 120px;
+}
+
+.content .main-content .table .dropdown-menu {
+  min-width: 5rem;
+}
+
+.modal .modal-body .form-control {
+  font-size: 14px;
+}
+
+.content .top-content .btn-remove {
+  display: none;
+}
+
+.content .top-content .form-control {
+  font-size: 14px;
+}
+
+.content .top-content .float-start.form-group input.form-control {
+  min-width: 250px;
+}
+
+select.find-product {
+  min-width: 150px;
+  max-width: 300px;
+}
+
+.content .top-content .float-start.form-group button {
+  position: absolute;
+  border: none;
+  background-color: transparent;
+  right: 10px;
+  top: 5px;
+}

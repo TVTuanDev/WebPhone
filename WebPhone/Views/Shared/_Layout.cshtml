@@ -11,7 +11,7 @@
     <link href="~/lib/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 </head>
 <body>
-    <header>
+    <header class="no-print">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WebPhone</a>
@@ -41,7 +41,7 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted no-print">
         <div class="container">
             &copy; 2024 - WebPhone - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>

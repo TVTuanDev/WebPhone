@@ -1,16 +1,13 @@
 ﻿@model IEnumerable<Bill>
 
 @{
-    ViewData["Title"] = "Danh mục hóa đơn";
+    ViewData["Title"] = "Danh mục công nợ";
     int count = 0;
 }
 
 <h1>@ViewData["Title"]</h1>
 
-<p>
-    <a asp-action="Create">Tạo mới</a>
-</p>
-<table class="table">
+<table class="table mt-5">
     <thead>
         <tr>
             <th>STT</th>
@@ -50,40 +47,10 @@
                 <td>
                     @item.CreateAt.ToString("dd/MM/yyyy HH:mm:ss")
                 </td>
-                <td class="d-flex justify-content-between align-items-center">
-                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
-                    <a asp-action="Export" asp-route-id="@item.Id">Xem</a> |
-                    <form asp-action="Delete" class="d-inline-block" asp-route-id="@item.Id" id="delete-bill">
-                        <button class="btn btn-link p-0">Xóa</button>
-                    </form>
+                <td class="d-flex">
+                    <a asp-action="Edit" asp-route-id="@item.Id">Cập nhật</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
-@section Scripts {
-    <script>
-        $(function () {
-            const Toast = window.globalVariable;
-            $('form#delete-bill').on('submit', function (e) {
-                e.preventDefault();
-
-                Swal.fire({
-                    title: "Bạn chắc chứ?",
-                    text: "Thao tác này sẽ không được hoàn lại!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Đồng ý",
-                    cancelButtonText: "Không"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.submit();
-                    }
-                });
-            });
-        });
-    </script>
-}
