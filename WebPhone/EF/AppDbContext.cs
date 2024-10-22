@@ -13,6 +13,8 @@ namespace WebPhone.EF
         public virtual DbSet<BillInfo> BillInfos { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
+        public virtual DbSet<Warehouse> Warehouses { get; set; }
+        public virtual DbSet<Inventory> Inventories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -118,6 +120,28 @@ namespace WebPhone.EF
                         .WithMany(r => r.UserRoles)
                         .HasForeignKey(ur => ur.UserId)
                         .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Warehouse>(entity =>
+            {
+                entity.Property(w => w.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(w => w.WarehouseName).HasMaxLength(200);
+                entity.Property(w => w.Address).HasMaxLength(200);
+                entity.Property(w => w.CreateAt).HasDefaultValueSql("(sysdatetime())");
+            });
+
+            modelBuilder.Entity<Inventory>(entity =>
+            {
+                entity.Property(i => i.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(i => i.CreateAt).HasDefaultValueSql("(sysdatetime())");
+
+                entity.HasOne(i => i.Product)
+                    .WithMany(p => p.Inventories)
+                    .HasForeignKey(i => i.ProductId);
+
+                entity.HasOne(i => i.Warehouse)
+                    .WithMany(p => p.Inventories)
+                    .HasForeignKey(i => i.WarehouseId);
             });
         }
 

@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using WebPhone.Areas.Admins.Models.Users;
+using WebPhone.Attributes;
 using WebPhone.EF;
 using WebPhone.Models;
 
@@ -11,6 +12,7 @@ namespace WebPhone.Areas.Admins.Controllers
 {
     [Area("Admins")]
     [Route("/admin/user/")]
+    [AppAuthorize("Administrator, Manager")]
     public class UsersController : Controller
     {
         private readonly ILogger _logger;

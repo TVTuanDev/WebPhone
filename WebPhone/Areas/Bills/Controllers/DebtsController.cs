@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using WebPhone.Attributes;
 using WebPhone.EF;
 
 namespace WebPhone.Areas.Bills.Controllers
 {
     [Area("Bills")]
     [Route("/bill/debt/")]
+    [AppAuthorize("Administrator, Manager, Employment")]
     public class DebtsController : Controller
     {
         private readonly ILogger<DebtsController> _logger;

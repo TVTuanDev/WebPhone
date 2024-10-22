@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using WebPhone.Areas.Products.Models.CateProducts;
 using WebPhone.Areas.Products.Models.Products;
+using WebPhone.Attributes;
 using WebPhone.Controllers;
 using WebPhone.EF;
 
@@ -18,7 +19,7 @@ namespace WebPhone.Areas.Products.Controllers
 {
     [Area("Products")]
     [Route("/product/")]
-    [Authorize]
+    [AppAuthorize("Administrator, Manager")]
     public class ProductsController : Controller
     {
         private readonly ILogger<ProductsController> _logger;
@@ -50,41 +51,41 @@ namespace WebPhone.Areas.Products.Controllers
             try
             {
                 var listProduct = new List<Product>();
-                var listProductCache = await GetProductInCache();
+                //var listProductCache = await GetProductInCache();
 
                 // Nếu có truyền name product
                 if (!string.IsNullOrEmpty(nameProduct))
                 {
-                    //listProduct = await (from p in _context.Products
-                    //                     where p.ProductName.Contains(nameProduct)
-                    //                     orderby p.Price ascending
-                    //                     select (new Product
-                    //                     {
-                    //                         Id = p.Id,
-                    //                         ProductName = p.ProductName,
-                    //                         Avatar = p.Avatar,
-                    //                         Price = p.Price,
-                    //                         Discount = p.Discount
-                    //                     })).ToListAsync();
+                    listProduct = await (from p in _context.Products
+                                         where p.ProductName.Contains(nameProduct)
+                                         orderby p.Price ascending
+                                         select (new Product
+                                         {
+                                             Id = p.Id,
+                                             ProductName = p.ProductName,
+                                             Avatar = p.Avatar,
+                                             Price = p.Price,
+                                             Discount = p.Discount
+                                         })).ToListAsync();
 
-                    listProduct = listProductCache.OrderBy(p => p.Price)
-                                    .Where(p => p.ProductName.Contains(nameProduct))
-                                    .ToList();
+                    //listProduct = listProductCache.OrderBy(p => p.Price)
+                    //                .Where(p => p.ProductName.Contains(nameProduct))
+                    //                .ToList();
                 }
                 else
                 {
-                    //listProduct = await (from product in _context.Products
-                    //                     orderby product.Price ascending
-                    //                     select (new Product
-                    //                     {
-                    //                         Id = product.Id,
-                    //                         Avatar = product.Avatar,
-                    //                         ProductName = product.ProductName,
-                    //                         Price = product.Price,
-                    //                         Discount = product.Discount
-                    //                     })).ToListAsync();
+                    listProduct = await (from product in _context.Products
+                                         orderby product.Price ascending
+                                         select (new Product
+                                         {
+                                             Id = product.Id,
+                                             Avatar = product.Avatar,
+                                             ProductName = product.ProductName,
+                                             Price = product.Price,
+                                             Discount = product.Discount
+                                         })).ToListAsync();
 
-                    listProduct = listProductCache.OrderByDescending(p => p.Price).ToList();
+                    //listProduct = listProductCache.OrderByDescending(p => p.Price).ToList();
                 }
 
                 // Lấy tổng số lượng sản phẩm

@@ -13,5 +13,6 @@
         public Guid? CategoryId { get; set; }
         public virtual CategoryProduct? CategoryProduct { get; set; }
         public virtual ICollection<BillInfo> BillInfos { get; set; } = new List<BillInfo>();
+        public virtual ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
     }
 }

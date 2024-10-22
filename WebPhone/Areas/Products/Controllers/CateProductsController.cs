@@ -8,13 +8,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebPhone.Areas.Accounts.Models.Accounts;
 using WebPhone.Areas.Products.Models.CateProducts;
+using WebPhone.Attributes;
 using WebPhone.EF;
 
 namespace WebPhone.Areas.Products.Controllers
 {
     [Area("Products")]
     [Route("/product/category/")]
-    [Authorize]
+    [AppAuthorize("Administrator, Manager")]
     public class CateProductsController : Controller
     {
         private ILogger<CateProductsController> _logger;

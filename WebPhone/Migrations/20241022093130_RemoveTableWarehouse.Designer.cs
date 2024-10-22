@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebPhone.EF;
 
@@ -11,9 +12,10 @@ using WebPhone.EF;
 namespace WebPhone.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241022093130_RemoveTableWarehouse")]
+    partial class RemoveTableWarehouse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,39 +157,6 @@ namespace WebPhone.Migrations
                     b.HasIndex("IdParent");
 
                     b.ToTable("CategoryProducts");
-                });
-
-            modelBuilder.Entity("WebPhone.EF.Inventory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<DateTime>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("(sysdatetime())");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("WarehouseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.ToTable("Inventories");
                 });
 
             modelBuilder.Entity("WebPhone.EF.Product", b =>
@@ -336,33 +305,26 @@ namespace WebPhone.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("(sysdatetime())");
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("WarehouseName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Warehouses");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("Warehouse");
                 });
 
             modelBuilder.Entity("WebPhone.EF.Bill", b =>
@@ -410,25 +372,6 @@ namespace WebPhone.Migrations
                     b.Navigation("CateProductParent");
                 });
 
-            modelBuilder.Entity("WebPhone.EF.Inventory", b =>
-                {
-                    b.HasOne("WebPhone.EF.Product", "Product")
-                        .WithMany("Inventories")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebPhone.EF.Warehouse", "Warehouse")
-                        .WithMany("Inventories")
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Warehouse");
-                });
-
             modelBuilder.Entity("WebPhone.EF.Product", b =>
                 {
                     b.HasOne("WebPhone.EF.CategoryProduct", "CategoryProduct")
@@ -458,6 +401,17 @@ namespace WebPhone.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WebPhone.EF.Warehouse", b =>
+                {
+                    b.HasOne("WebPhone.EF.Product", "Product")
+                        .WithOne("Warehouse")
+                        .HasForeignKey("WebPhone.EF.Warehouse", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("WebPhone.EF.Bill", b =>
                 {
                     b.Navigation("BillInfos");
@@ -474,7 +428,8 @@ namespace WebPhone.Migrations
                 {
                     b.Navigation("BillInfos");
 
-                    b.Navigation("Inventories");
+                    b.Navigation("Warehouse")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("WebPhone.EF.Role", b =>
@@ -489,11 +444,6 @@ namespace WebPhone.Migrations
                     b.Navigation("EmploymentBills");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("WebPhone.EF.Warehouse", b =>
-                {
-                    b.Navigation("Inventories");
                 });
 #pragma warning restore 612, 618
         }

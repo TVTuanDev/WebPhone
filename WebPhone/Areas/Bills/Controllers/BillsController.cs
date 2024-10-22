@@ -15,7 +15,7 @@ namespace WebPhone.Areas.Bills.Controllers
 {
     [Area("Bills")]
     [Route("/bill/")]
-    [AppAuthorize]
+    [AppAuthorize("Administrator, Manager, Employment")]
     public class BillsController : Controller
     {
         private readonly ILogger<BillsController> _logger;
