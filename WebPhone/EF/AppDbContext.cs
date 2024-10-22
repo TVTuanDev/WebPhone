@@ -6,11 +6,13 @@ namespace WebPhone.EF
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<CategoryProduct> CategoryProducts { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Bill> Bills { get; set; }
-        public DbSet<BillInfo> BillInfos { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<CategoryProduct> CategoryProducts { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<Bill> Bills { get; set; }
+        public virtual DbSet<BillInfo> BillInfos { get; set; }
+        public virtual DbSet<Role> Roles { get; set; }
+        public virtual DbSet<UserRole> UserRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -92,6 +94,30 @@ namespace WebPhone.EF
                     .WithMany(p => p.BillInfos)
                     .HasForeignKey(bi => bi.ProductId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.Property(r => r.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(r => r.RoleName).HasMaxLength(200);
+                entity.Property(r => r.CreateAt).HasDefaultValueSql("(sysdatetime())");
+                entity.HasIndex(r => r.RoleName).IsUnique();
+            });
+
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasKey(ur => new { ur.UserId, ur.RoleId })
+                        .HasName("PK_UserRole_UserId_RoleId");
+
+                entity.HasOne(ur => ur.Role)
+                        .WithMany(r => r.UserRoles)
+                        .HasForeignKey(ur => ur.RoleId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ur => ur.User)
+                        .WithMany(r => r.UserRoles)
+                        .HasForeignKey(ur => ur.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

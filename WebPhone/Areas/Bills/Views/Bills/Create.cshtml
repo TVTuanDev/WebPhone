@@ -355,7 +355,7 @@
                 console.log(formCreateCustomer);
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("CreateCustomer", "AdminAccount", new { area = "Accounts" })',
+                    url: '@Url.Action("CreateCustomer", "Users", new { area = "Admins" })',
                     data: formCreateCustomer,
                     success: function (res) {
                         if (res.success === false) {

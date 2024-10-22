@@ -1,34 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using WebPhone.Areas.Accounts.Models.AdminAccount;
+using System.Text.RegularExpressions;
+using WebPhone.Areas.Admins.Models.Users;
 using WebPhone.EF;
 using WebPhone.Models;
 
-namespace WebPhone.Areas.Accounts.Controllers
+namespace WebPhone.Areas.Admins.Controllers
 {
-    [Area("Accounts")]
-    [Route("/admin/users/")]
-    [Authorize]
-    public class AdminAccountController : Controller
+    [Area("Admins")]
+    [Route("/admin/user/")]
+    public class UsersController : Controller
     {
         private readonly ILogger _logger;
         private readonly AppDbContext _context;
 
         private readonly int ITEM_PER_PAGE = 10;
 
-        public AdminAccountController
+        public UsersController
             (
-                ILogger<AdminAccountController> logger,
+                ILogger<UsersController> logger, 
                 AppDbContext context
             )
         {
@@ -87,6 +79,9 @@ namespace WebPhone.Areas.Accounts.Controllers
 
             countPage = countPage < 1 ? 1 : countPage;
             ViewBag.CountPage = countPage;
+
+            var roles = await _context.Roles.Select(r => new { r.Id, r.RoleName }).ToListAsync();
+            ViewBag.RoleList = new SelectList(roles, "Id", "RoleName");
 
             return View(userList);
         }
@@ -402,9 +397,10 @@ namespace WebPhone.Areas.Accounts.Controllers
             });
         }
 
+        [HttpPost("create-customer")]
         public async Task<JsonResult> CreateCustomer(CustomerDTO customerDTO)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return Json(new
                 {
                     Success = false,
@@ -446,6 +442,102 @@ namespace WebPhone.Areas.Accounts.Controllers
                 Message = "Success",
                 Data = customerDTO
             });
+        }
+
+        [HttpGet("authorize")]
+        public async Task<IActionResult> UserAuthorization(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if(user == null)
+            {
+                TempData["Message"] = "Error: Không tìm thấy thông tin tài khoản";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var selectRole = await _context.UserRoles
+                                .Where(ur => ur.UserId == user.Id)
+                                .Select(ur => ur.RoleId)
+                                .ToListAsync();
+
+            var userRoleDTO = new UserRoleDTO
+            {
+                UserId = user.Id,
+                SelectedRole = selectRole
+            };
+
+            ViewBag.User = user;
+            ViewBag.Roles = await _context.Roles.ToListAsync();
+
+            return View(userRoleDTO);
+        }
+
+        [HttpPost("authorize")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UserAuthorization(UserRoleDTO userRoleDTO)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    TempData["Message"] = "Error: Thông tin không chính xác";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var user = await _context.Users.FindAsync(userRoleDTO.UserId);
+                if (user == null)
+                {
+                    TempData["Message"] = "Error: Không tìm thấy thông tin tài khoản";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var userRole = await _context.UserRoles.ToListAsync();
+
+                var userRoleByUser = userRole.Where(ur => ur.UserId == user.Id)
+                                    .Select(ur => ur.RoleId).ToList();
+
+                foreach (Guid guidId in userRoleByUser)
+                {
+                    // Nếu user role mới không chứa user role cũ
+                    // Xóa user role cũ
+                    if (!userRoleDTO.SelectedRole.Contains(guidId))
+                    {
+                        var userRoleRemove = userRole.FirstOrDefault(ur => ur.RoleId == guidId);
+                        if(userRoleRemove == null)
+                        {
+                            TempData["Message"] = "Error: Không tìm thấy thông tin quyền";
+                            return RedirectToAction(nameof(UserAuthorization));
+                        }
+                        _context.UserRoles.Remove(userRoleRemove);
+                    }
+                }
+
+                foreach (Guid guidId in userRoleDTO.SelectedRole)
+                {
+                    // Nếu user role mới ko có trong user role cũ
+                    // Thêm user role mới
+                    if (!userRoleByUser.Contains(guidId))
+                    {
+                        var userRoleNew = new UserRole
+                        {
+                            UserId = user.Id,
+                            RoleId = guidId,
+                        };
+                        _context.UserRoles.Add(userRoleNew);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Success: Phân quyền thành công";
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                TempData["Message"] = "Error: Lỗi hệ thống";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         private bool CheckRegexMail(string email)

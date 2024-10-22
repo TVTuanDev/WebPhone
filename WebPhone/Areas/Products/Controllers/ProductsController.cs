@@ -232,40 +232,60 @@ namespace WebPhone.Areas.Products.Controllers
         {
             await RenderCatePoduct();
 
-            if (id != productDTO.Id)
+            try
             {
-                TempData["Message"] = "Error: Danh mục không hợp lệ";
-                return View(productDTO);
-            }
+                if (id != productDTO.Id)
+                {
+                    TempData["Message"] = "Error: Danh mục không hợp lệ";
+                    return View(productDTO);
+                }
 
-            if (!ModelState.IsValid)
+                if (!ModelState.IsValid)
+                {
+                    TempData["Message"] = "Error: Vui lòng nhập đầy đủ thông tin";
+                    return View(productDTO);
+                }
+
+                var product = await _context.Products.FindAsync(id);
+                if (product == null)
+                {
+                    TempData["Message"] = "Error: Không tìm thấy sản phẩm";
+                    return View(productDTO);
+                }
+
+                product.ProductName = productDTO.ProductName;
+                product.Avatar = await _mediaHandle.UploadImageAsync(productDTO.Avatar);
+                product.Description = productDTO.Description;
+                product.Price = productDTO.Price;
+                product.Discount = productDTO.Discount;
+                product.CategoryId = productDTO.CategoryId;
+                product.UpdateAt = DateTime.UtcNow;
+
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync();
+                await SetProductInCache();
+
+                TempData["Message"] = "Success: Sửa sản phẩm thành công";
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
             {
-                TempData["Message"] = "Error: Vui lòng nhập đầy đủ thông tin";
-                return View(productDTO);
+                if (ex.InnerException is SqlException sqlEx)
+                {
+                    // 2601: Cannot insert duplicate key row
+                    // 2627: Violation of UNIQUE KEY constraint
+                    if (sqlEx.Number == 2601 || sqlEx.Number == 2627)
+                    {
+                        TempData["Message"] = "Error: Tên sản phẩm đã được sử dụng";
+                        return View(productDTO);
+                    }
+                }
+
+                _logger.LogError(ex.Message);
+                TempData["Message"] = "Error: Lỗi hệ thống";
+                return RedirectToAction(nameof(Create));
             }
-
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                TempData["Message"] = "Error: Không tìm thấy sản phẩm";
-                return View(productDTO);
-            }
-
-            product.ProductName = productDTO.ProductName;
-            product.Avatar = await _mediaHandle.UploadImageAsync(productDTO.Avatar);
-            product.Description = productDTO.Description;
-            product.Price = productDTO.Price;
-            product.Discount = productDTO.Discount;
-            product.CategoryId = productDTO.CategoryId;
-            product.UpdateAt = DateTime.UtcNow;
-
-            _context.Products.Update(product);
-            await _context.SaveChangesAsync();
-            await SetProductInCache();
-
-            TempData["Message"] = "Success: Sửa sản phẩm thành công";
-
-            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("delete")]

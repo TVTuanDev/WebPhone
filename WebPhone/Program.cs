@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -22,7 +23,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 {
     options.LoginPath = "/customer/login";
     options.LogoutPath = "/customer/logout";
+    options.AccessDeniedPath = "/access-denied";
     options.ExpireTimeSpan = TimeSpan.FromDays(30); // Thời gian hết hạn của cookie
+    options.SlidingExpiration = true;
 });
 
 builder.Services.AddScoped<MediaHandle>();

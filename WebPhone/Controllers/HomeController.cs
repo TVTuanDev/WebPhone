@@ -13,11 +13,19 @@ namespace WebPhone.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
 
+        [HttpGet("/access-denied")]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        [HttpGet("/privacy")]
         public IActionResult Privacy()
         {
             return View();

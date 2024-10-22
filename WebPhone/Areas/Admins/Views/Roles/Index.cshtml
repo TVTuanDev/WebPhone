@@ -1,0 +1,45 @@
+﻿@model IEnumerable<Role>
+
+@{
+    ViewData["Title"] = "Danh sách quyền";
+    int count = 0;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Create">Tạo mới</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>STT</th>
+            <th>Tên quyền</th>
+            <th>Ngày tạo</th>
+            <th>Ngày cập nhật</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@(++count)</td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RoleName)
+                </td>
+                <td>
+                    @item.CreateAt.ToString("dd/MM/yyyy HH:mm:ss")
+                </td>
+                <td>
+                    @item.UpdateAt?.ToString("dd/MM/yyyy HH:mm:ss")
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Xem</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

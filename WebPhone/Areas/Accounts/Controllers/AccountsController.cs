@@ -157,8 +157,18 @@ namespace WebPhone.Areas.Accounts.Controllers
                 // Add cookie xác thực
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Email, user.Email)
+                    new Claim(ClaimTypes.Email, user.Email),
                 };
+
+                var listRoleName = await (from r in _context.Roles
+                                          join ur in _context.UserRoles on r.Id equals ur.RoleId
+                                          where ur.UserId == user.Id
+                                          select r.RoleName).ToListAsync();
+
+                foreach (var roleName in listRoleName)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, roleName));
+                }
 
                 var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 

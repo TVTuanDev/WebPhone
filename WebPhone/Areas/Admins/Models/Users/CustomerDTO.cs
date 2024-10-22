@@ -1,4 +1,4 @@
-﻿namespace WebPhone.Areas.Accounts.Models.AdminAccount
+﻿namespace WebPhone.Areas.Admins.Models.Users
 {
     public class CustomerDTO
     {

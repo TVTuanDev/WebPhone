@@ -13,5 +13,6 @@
         public DateTime? UpdateAt { get; set; }
         public virtual ICollection<Bill> CustomerBills { get; set; } = new List<Bill>();
         public virtual ICollection<Bill> EmploymentBills { get; set; } = new List<Bill>();
+        public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
 }

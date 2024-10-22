@@ -8,13 +8,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebPhone.Areas.Bills.Models.Bills;
+using WebPhone.Attributes;
 using WebPhone.EF;
 
 namespace WebPhone.Areas.Bills.Controllers
 {
     [Area("Bills")]
     [Route("/bill/")]
-    [Authorize]
+    [AppAuthorize]
     public class BillsController : Controller
     {
         private readonly ILogger<BillsController> _logger;

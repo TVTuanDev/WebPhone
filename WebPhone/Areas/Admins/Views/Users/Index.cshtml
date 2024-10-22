@@ -69,7 +69,7 @@
             <th>Trạng thái</th>
             <th>Ngày tạo</th>
             <th>Ngày cập nhật</th>
-            <th>Actions</th>
+            <th class="text-center">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -90,10 +90,11 @@
                 <td>
                     @item.UpdateAt?.ToString("dd/MM/yyyy HH:mm:ss")
                 </td>
-                <td>
+                <td class="text-center">
                     <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                    <a asp-action="Details" asp-route-id="@item.Id">Xem</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a> |
+                    <a asp-action="UserAuthorization" asp-route-id="@item.Id">Phân quyền</a>
                 </td>
             </tr>
         }
@@ -105,7 +106,7 @@
         $(function () {
             $('form.search').on('submit', function (event) {
                 event.preventDefault();
-                let urlAction = "@Url.Action("Index", "AdminAccount")";
+                let urlAction = "@Url.Action("Index", "Users")";
                 let searchValue = $(this).find("input[name=Email]").val();
                 let url = `${urlAction}?q=${searchValue}`;
 
