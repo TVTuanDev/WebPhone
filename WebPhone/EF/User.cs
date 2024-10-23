@@ -14,5 +14,7 @@
         public virtual ICollection<Bill> CustomerBills { get; set; } = new List<Bill>();
         public virtual ICollection<Bill> EmploymentBills { get; set; } = new List<Bill>();
         public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        public virtual ICollection<LogHistory> LogHistories { get; set; } = new List<LogHistory>();
+        public virtual ICollection<PaymentLog> PaymentLogs { get; set; } = new List<PaymentLog>();
     }
 }

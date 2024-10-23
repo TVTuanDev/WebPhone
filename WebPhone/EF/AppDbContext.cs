@@ -15,6 +15,8 @@ namespace WebPhone.EF
         public virtual DbSet<UserRole> UserRoles { get; set; }
         public virtual DbSet<Warehouse> Warehouses { get; set; }
         public virtual DbSet<Inventory> Inventories { get; set; }
+        public virtual DbSet<LogHistory> LogHistories { get; set; }
+        public virtual DbSet<PaymentLog> PaymentLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -142,6 +144,31 @@ namespace WebPhone.EF
                 entity.HasOne(i => i.Warehouse)
                     .WithMany(p => p.Inventories)
                     .HasForeignKey(i => i.WarehouseId);
+            });
+
+            modelBuilder.Entity<LogHistory>(entity =>
+            {
+                entity.Property(lh => lh.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(lh => lh.EntityName).HasMaxLength(200);
+                entity.Property(lh => lh.UpdateAt).HasDefaultValueSql("(sysdatetime())");
+
+                entity.HasOne(lh => lh.Employment)
+                    .WithMany(u => u.LogHistories)
+                    .HasForeignKey(lh => lh.EmploymentId);
+            });
+
+            modelBuilder.Entity<PaymentLog>(entity =>
+            {
+                entity.Property(p => p.Id).HasDefaultValueSql("NEWID()");
+                entity.Property(p => p.CreateAt).HasDefaultValueSql("(sysdatetime())");
+
+                entity.HasOne(p => p.Customer)
+                    .WithMany(c => c.PaymentLogs)
+                    .HasForeignKey(p => p.CustomerId);
+
+                entity.HasOne(p => p.Bill)
+                    .WithMany(c => c.PaymentLogs)
+                    .HasForeignKey(p => p.BillId);
             });
         }
 

@@ -8,7 +8,11 @@ using WebPhone.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+    });
 builder.Services.AddRazorPages();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
@@ -30,6 +34,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddScoped<MediaHandle>();
 builder.Services.AddScoped<SendMailService>();
+builder.Services.AddScoped<LogHistoryService>();
 builder.Services.AddScoped<Cloudinary>(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();

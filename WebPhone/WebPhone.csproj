@@ -10,6 +10,7 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="CloudinaryDotNet" Version="1.26.2" />
     <PackageReference Include="MailKit" Version="4.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.35" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.35" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.35" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.35">
@@ -25,6 +26,7 @@
     <Folder Include="Areas\Admins\Data\" />
     <Folder Include="Areas\Bills\Data\" />
     <Folder Include="Areas\Products\Data\" />
+    <Folder Include="Areas\Warehouses\Data\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

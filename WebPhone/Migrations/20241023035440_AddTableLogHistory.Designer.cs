@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebPhone.EF;
 
@@ -11,9 +12,10 @@ using WebPhone.EF;
 namespace WebPhone.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241023035440_AddTableLogHistory")]
+    partial class AddTableLogHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,36 +230,6 @@ namespace WebPhone.Migrations
                     b.HasIndex("EmploymentId");
 
                     b.ToTable("LogHistories");
-                });
-
-            modelBuilder.Entity("WebPhone.EF.PaymentLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<Guid>("BillId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("(sysdatetime())");
-
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BillId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("PaymentLogs");
                 });
 
             modelBuilder.Entity("WebPhone.EF.Product", b =>
@@ -510,25 +482,6 @@ namespace WebPhone.Migrations
                     b.Navigation("Employment");
                 });
 
-            modelBuilder.Entity("WebPhone.EF.PaymentLog", b =>
-                {
-                    b.HasOne("WebPhone.EF.Bill", "Bill")
-                        .WithMany("PaymentLogs")
-                        .HasForeignKey("BillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebPhone.EF.User", "Customer")
-                        .WithMany("PaymentLogs")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Bill");
-
-                    b.Navigation("Customer");
-                });
-
             modelBuilder.Entity("WebPhone.EF.Product", b =>
                 {
                     b.HasOne("WebPhone.EF.CategoryProduct", "CategoryProduct")
@@ -561,8 +514,6 @@ namespace WebPhone.Migrations
             modelBuilder.Entity("WebPhone.EF.Bill", b =>
                 {
                     b.Navigation("BillInfos");
-
-                    b.Navigation("PaymentLogs");
                 });
 
             modelBuilder.Entity("WebPhone.EF.CategoryProduct", b =>
@@ -591,8 +542,6 @@ namespace WebPhone.Migrations
                     b.Navigation("EmploymentBills");
 
                     b.Navigation("LogHistories");
-
-                    b.Navigation("PaymentLogs");
 
                     b.Navigation("UserRoles");
                 });

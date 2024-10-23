@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using WebPhone.Areas.Bills.Models.Bills;
 using WebPhone.Attributes;
 using WebPhone.EF;
 
@@ -67,10 +68,15 @@ namespace WebPhone.Areas.Bills.Controllers
             string stringPayment = Regex.Replace(payment, @"\D", "");
             int.TryParse(stringPayment, out int paymentValue);
 
-            bill.PaymentPrice += paymentValue;
-            bill.UpdateAt = DateTime.UtcNow;
+            var paymentLog = new PaymentLog
+            {
+                Price = paymentValue,
+                CustomerId = bill.CustomerId ?? Guid.Empty,
+                BillId = bill.Id
+            };
 
-            _context.Bills.Update(bill);
+            _context.PaymentLogs.Add(paymentLog);
+
             await _context.SaveChangesAsync();
 
             TempData["Message"] = "Success: Cập nhật công nợ thành công";

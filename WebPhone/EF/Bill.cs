@@ -18,6 +18,7 @@
         public virtual User? Customer { get; set; }
         public virtual User? Employment { get; set; }
         public virtual ICollection<BillInfo> BillInfos { get; set; } = new List<BillInfo>();
+        public virtual ICollection<PaymentLog> PaymentLogs { get; set; } = new List<PaymentLog>();
     }
 
     public enum DiscountStyle
