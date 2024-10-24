@@ -28,9 +28,21 @@ namespace WebPhone.Areas.Bills.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var bill = await _context.Bills.Where(b => b.TotalPrice - b.PaymentPrice > 0).ToListAsync();
+            var billInDb = await _context.Bills.Where(b => b.TotalPrice - b.PaymentPrice > 0).ToListAsync();
+            var bills = new List<Bill>();
 
-            return View(bill);
+            foreach (var bill in billInDb)
+            {
+                var payment = await _context.PaymentLogs.Where(p => p.BillId == bill.Id).SumAsync(p => p.Price);
+
+                if(bill.TotalPrice - payment > 0)
+                {
+                    bill.PaymentPrice = payment;
+                    bills.Add(bill);
+                }
+            }
+
+            return View(bills);
         }
 
         [HttpGet("edit")]
@@ -40,11 +52,16 @@ namespace WebPhone.Areas.Bills.Controllers
                         .Include(b => b.Customer)
                         .Include(b => b.BillInfos)
                         .FirstOrDefaultAsync(b => b.Id == id);
+
             if (bill == null)
             {
                 TempData["Message"] = "Error: Không tìm thấy hóa đơn";
-                RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index));
             }
+
+            var payment = await _context.PaymentLogs.Where(p => p.BillId == bill.Id).SumAsync(p => p.Price);
+            bill.PaymentPrice = payment;
+
             return View(bill);
         }
 

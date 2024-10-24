@@ -18,7 +18,7 @@ namespace WebPhone.Areas.Bills.Controllers
 {
     [Area("Bills")]
     [Route("/bill/")]
-    [Authorize("Administrator, Manager, Employment")]
+    [AppAuthorize("Administrator, Manager, Employment")]
     public class BillsController : Controller
     {
         private readonly ILogger<BillsController> _logger;
@@ -236,7 +236,7 @@ namespace WebPhone.Areas.Bills.Controllers
             if (bill == null)
             {
                 TempData["Message"] = "Error: Không tìm thấy hóa đơn";
-                RedirectToAction(nameof(Create));
+                return RedirectToAction(nameof(Create));
             }
 
             return View(bill);

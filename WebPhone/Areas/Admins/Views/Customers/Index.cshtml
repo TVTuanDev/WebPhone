@@ -79,7 +79,7 @@
                     @Html.DisplayFor(modelItem => item.Customer.Email)
                 </td>
                 <td>@(item.Customer.EmailConfirmed ? "Đã xác thực" : "Chưa xác thực")</td>
-                <td>@String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Debt)</td>
+                <td class="text-danger">- @String.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", item.Debt)</td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@item.Customer.Id">Chi tiết</a>
                 </td>
