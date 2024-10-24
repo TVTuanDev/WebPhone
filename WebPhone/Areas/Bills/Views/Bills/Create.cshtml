@@ -352,7 +352,6 @@
             $('#createCustomer button[name=creareCustomer]').click(function () {
                 let formCreateCustomer = $('#create-customer').serialize();
 
-                console.log(formCreateCustomer);
                 $.ajax({
                     type: 'POST',
                     url: '@Url.Action("CreateCustomer", "Users", new { area = "Admins" })',
@@ -539,7 +538,7 @@
 
                 $('.price-end').text(totalPriceValue.toLocaleString('vi-VN') + ' đ');
                 $('.total-price-end').text(totalPriceValue.toLocaleString('vi-VN') + ' đ');
-            };
+            }
 
             function DiscountTotalPrice(){
                 let totalPriceEnd = totalPriceValue;
@@ -561,7 +560,7 @@
 
                 $('.discount-end').text(`- ${discountTotal.toLocaleString('vi-VN')} đ`);
                 $('.total-price-end').text(totalPriceEnd.toLocaleString('vi-VN') + ' đ');
-            };
+            }
 
             function AddInfoCustomer(element) {
                 let parent = element.closest('.search-customer-name');

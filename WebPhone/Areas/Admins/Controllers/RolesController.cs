@@ -8,12 +8,14 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using WebPhone.Areas.Admins.Models.Roles;
 using WebPhone.Areas.Products.Models.Products;
+using WebPhone.Attributes;
 using WebPhone.EF;
 
 namespace WebPhone.Areas.Admins.Controllers
 {
     [Area("Admins")]
     [Route("/admin/role")]
+    [AppAuthorize("Administrator")]
     public class RolesController : Controller
     {
         private readonly ILogger _logger;

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using WebPhone.Areas.Admins.Models.Users;
 using WebPhone.Areas.Warehouses.Models.Warehouses;
 using WebPhone.EF;
+using WebPhone.Models;
 
 namespace WebPhone.Areas.Warehouses.Controllers
 {
@@ -193,6 +196,125 @@ namespace WebPhone.Areas.Warehouses.Controllers
             ViewData["Warehouses"] = await _context.Warehouses.Take(100).ToListAsync();
             ViewData["Products"] = await _context.Products.Take(100).ToListAsync();
             return View();
+        }
+
+        [HttpPost("import")]
+        public async Task<JsonResult> ImportWarehouse(InventoryDTO inventoryDTO)
+        {
+            try
+            {
+                if(!ModelState.IsValid)
+                    return Json(new
+                    {
+                        Success = false,
+                        Message = "Vui lòng nhập đầy đủ thông tin"
+                    });
+
+                var warehouse = await _context.Warehouses.FindAsync(inventoryDTO.WarehouseId);
+                if(warehouse == null)
+                    return Json(new
+                    {
+                        Success = false,
+                        Message = "Không tìm thấy thông tin kho"
+                    });
+
+                foreach (var productImport in inventoryDTO.ProductImports)
+                {
+                    var product = await _context.Products.FindAsync(productImport.ProductId);
+                    if(product == null)
+                        return Json(new
+                        {
+                            Success = false,
+                            Message = "Không tìm thấy thông tin sản phẩm"
+                        });
+
+                    var inventory = new Inventory
+                    {
+                        ProductId = productImport.ProductId,
+                        WarehouseId = warehouse.Id,
+                        Quantity = productImport.Quantity,
+                        ImportPrice = productImport.ImportPrice,
+                    };
+
+                    _context.Inventories.Add(inventory);
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Success: Nhập hàng thành công";
+
+                return Json(new
+                {
+                    Success = true,
+                    Message = "Success",
+                    Data = Url.Action(nameof(Index))
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Json(new
+                {
+                    Success = false,
+                    Message = "Lỗi hệ thống"
+                });
+            }
+        }
+
+        [HttpPost("filter")]
+        public async Task<JsonResult> FilterWarehouseByName(string name)
+        {
+            name = string.IsNullOrEmpty(name) ? "" : name;
+
+            var warehouses = await _context.Warehouses
+                            .Where(w => w.WarehouseName.Contains(name))
+                            .Take(100)
+                            .Select(w => new Warehouse
+                            {
+                                Id = w.Id,
+                                WarehouseName = w.WarehouseName,
+                                Address = w.Address,
+                                Capacity = w.Capacity,
+                            })
+                            .ToListAsync();
+
+            return Json(new
+            {
+                Success = true,
+                Message = "Success",
+                Data = warehouses
+            });
+        }
+
+        [HttpPost("create-warehouse")]
+        public async Task<JsonResult> CreateWarehouse(WarehouseDTO warehouseDTO)
+        {
+            if (!ModelState.IsValid)
+                return Json(new
+                {
+                    Success = false,
+                    Message = "Vui lòng nhập đầy đủ thông tin"
+                });
+
+            var warehouse = new Warehouse
+            {
+                Id = Guid.NewGuid(),
+                WarehouseName = warehouseDTO.WarehouseName,
+                Address = warehouseDTO.Address,
+                Capacity = warehouseDTO.Capacity,
+            };
+
+            _context.Warehouses.Add(warehouse);
+            await _context.SaveChangesAsync();
+
+            warehouseDTO.Id = warehouse.Id;
+
+            return Json(new
+            {
+                Success = true,
+                Message = "Success",
+                Data = warehouseDTO
+            });
         }
     }
 }

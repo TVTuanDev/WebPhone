@@ -242,158 +242,158 @@ namespace WebPhone.Areas.Bills.Controllers
             return View(bill);
         }
 
-        //[HttpGet("edit")]
-        //public async Task<IActionResult> Edit(Guid? id)
-        //{
-        //    var bill = await _context.Bills
-        //                .Include(b => b.Customer)
-        //                .Include(b => b.BillInfos)
-        //                .FirstOrDefaultAsync(b => b.Id == id);
+        [HttpGet("edit")]
+        public async Task<IActionResult> Edit(Guid? id)
+        {
+            var bill = await _context.Bills
+                        .Include(b => b.Customer)
+                        .Include(b => b.BillInfos)
+                        .FirstOrDefaultAsync(b => b.Id == id);
 
-        //    if (bill == null)
-        //    {
-        //        TempData["Message"] = "Error: Không tìm thấy hóa đơn";
-        //        return RedirectToAction(nameof(Index));
-        //    }
+            if (bill == null)
+            {
+                TempData["Message"] = "Error: Không tìm thấy hóa đơn";
+                return RedirectToAction(nameof(Index));
+            }
 
-        //    ViewData["Products"] = await _context.Products.Take(100).ToListAsync();
+            ViewData["Products"] = await _context.Products.Take(100).ToListAsync();
 
-        //    return View(bill);
-        //}
+            return View(bill);
+        }
 
-        //[HttpPost("edit")]
-        //public async Task<JsonResult> Edit(Guid id, BillDTO billDTO)
-        //{
-        //    try
-        //    {
-        //        if (id != billDTO.Id)
-        //            return Json(new
-        //            {
-        //                Success = false,
-        //                Message = "Dữ liệu hóa đơn không hợp lệ"
-        //            });
+        [HttpPost("edit")]
+        public async Task<JsonResult> Edit(Guid id, BillDTO billDTO)
+        {
+            try
+            {
+                if (id != billDTO.Id)
+                    return Json(new
+                    {
+                        Success = false,
+                        Message = "Dữ liệu hóa đơn không hợp lệ"
+                    });
 
-        //        var bill = await _context.Bills.Include(b => b.BillInfos).FirstOrDefaultAsync(b => b.Id == billDTO.Id);
-        //        if (bill == null)
-        //            return Json(new
-        //            {
-        //                Success = false,
-        //                Message = "Không tìm thấy thông tin hóa đơn"
-        //            });
+                var bill = await _context.Bills.Include(b => b.BillInfos).FirstOrDefaultAsync(b => b.Id == billDTO.Id);
+                if (bill == null)
+                    return Json(new
+                    {
+                        Success = false,
+                        Message = "Không tìm thấy thông tin hóa đơn"
+                    });
 
-        //        if (billDTO.ProductId.Count != billDTO.Quantities.Count)
-        //            return Json(new
-        //            {
-        //                Success = false,
-        //                Message = "Dữ liệu số lượng sản phẩm không hợp lệ"
-        //            });
+                if (billDTO.ProductId.Count != billDTO.Quantities.Count)
+                    return Json(new
+                    {
+                        Success = false,
+                        Message = "Dữ liệu số lượng sản phẩm không hợp lệ"
+                    });
 
-        //        // Lấy id product trong db
-        //        var productIdInDb = bill.BillInfos.Select(bi => bi.ProductId).ToList();
-        //        // lấy id product mới cần sửa
-        //        var productIdNew = billDTO.ProductId;
+                // Lấy id product trong db
+                var productIdInDb = bill.BillInfos.Select(bi => bi.ProductId).ToList();
+                // lấy id product mới cần sửa
+                var productIdNew = billDTO.ProductId;
 
-        //        int price = 0;
-        //        int discount = 0;
-        //        int totalPrice = 0;
+                int price = 0;
+                int discount = 0;
+                int totalPrice = 0;
 
-        //        foreach (var guidId in productIdInDb)
-        //        {
-        //            // Nếu id product trong db không có trong id mới thì xóa billInfo trong db
-        //            if (!productIdNew.Contains(guidId))
-        //            {
-        //                var billInfo = bill.BillInfos.FirstOrDefault(bi => bi.ProductId == guidId);
-        //                if (billInfo == null) break;
+                foreach (var guidId in productIdInDb)
+                {
+                    // Nếu id product trong db không có trong id mới thì xóa billInfo trong db
+                    if (!productIdNew.Contains(guidId))
+                    {
+                        var billInfo = bill.BillInfos.FirstOrDefault(bi => bi.ProductId == guidId);
+                        if (billInfo == null) break;
 
-        //                _context.BillInfos.Remove(billInfo);
-        //            }
-        //        }
+                        _context.BillInfos.Remove(billInfo);
+                    }
+                }
 
-        //        foreach (var guidId in productIdNew)
-        //        {
-        //            int quantity = billDTO.Quantities[productIdNew.IndexOf(guidId)];
-        //            var product = await _context.Products.FindAsync(guidId);
-        //            if (product == null) break;
+                foreach (var guidId in productIdNew)
+                {
+                    int quantity = billDTO.Quantities[productIdNew.IndexOf(guidId)];
+                    var product = await _context.Products.FindAsync(guidId);
+                    if (product == null) break;
 
-        //            // Nếu id mới không có trong db thì thêm mới
-        //            if (!productIdInDb.Contains(guidId))
-        //            {
-        //                var billInfo = new BillInfo
-        //                {
-        //                    Id = Guid.NewGuid(),
-        //                    BillId = bill.Id,
-        //                    ProductId = product.Id,
-        //                    ProductName = product.ProductName,
-        //                    Price = product.Price,
-        //                    Discount = product.Discount,
-        //                    Quantity = quantity
-        //                };
+                    // Nếu id mới không có trong db thì thêm mới
+                    if (!productIdInDb.Contains(guidId))
+                    {
+                        var billInfo = new BillInfo
+                        {
+                            Id = Guid.NewGuid(),
+                            BillId = bill.Id,
+                            ProductId = product.Id,
+                            ProductName = product.ProductName,
+                            Price = product.Price,
+                            Discount = product.Discount,
+                            Quantity = quantity
+                        };
 
-        //                _context.BillInfos.Add(billInfo);
-        //            }
+                        _context.BillInfos.Add(billInfo);
+                    }
 
-        //            price += (product.Discount ?? product.Price) * quantity;
-        //        }
+                    price += (product.Discount ?? product.Price) * quantity;
+                }
 
-        //        await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
-        //        foreach (var guidId in productIdNew)
-        //        {
-        //            int quantity = billDTO.Quantities[productIdNew.IndexOf(guidId)];
-        //            // Thay đổi quantity với những product cũ
-        //            var billInfoInBill = bill.BillInfos.FirstOrDefault(bi => bi.ProductId == guidId);
+                foreach (var guidId in productIdNew)
+                {
+                    int quantity = billDTO.Quantities[productIdNew.IndexOf(guidId)];
+                    // Thay đổi quantity với những product cũ
+                    var billInfoInBill = bill.BillInfos.FirstOrDefault(bi => bi.ProductId == guidId);
 
-        //            if (billInfoInBill == null) break;
+                    if (billInfoInBill == null) break;
 
-        //            if (billInfoInBill.Quantity != quantity)
-        //            {
-        //                billInfoInBill.Quantity = quantity;
-        //                billInfoInBill.UpdateAt = DateTime.UtcNow;
+                    if (billInfoInBill.Quantity != quantity)
+                    {
+                        billInfoInBill.Quantity = quantity;
+                        billInfoInBill.UpdateAt = DateTime.UtcNow;
 
-        //                _context.BillInfos.Update(billInfoInBill);
-        //            }
-        //        }
+                        _context.BillInfos.Update(billInfoInBill);
+                    }
+                }
 
-        //        if (billDTO.DiscountStyle == DiscountStyle.Percent)
-        //        {
-        //            discount = (int)Math.Ceiling((double)price / 100 * billDTO.DiscountValue / 1000) * 1000;
-        //        }
-        //        if (billDTO.DiscountStyle == DiscountStyle.Money)
-        //        {
-        //            discount = (int)Math.Ceiling((double)billDTO.DiscountValue / 1000) * 1000;
-        //        }
+                if (billDTO.DiscountStyle == DiscountStyle.Percent)
+                {
+                    discount = (int)Math.Ceiling((double)price / 100 * billDTO.DiscountValue / 1000) * 1000;
+                }
+                if (billDTO.DiscountStyle == DiscountStyle.Money)
+                {
+                    discount = (int)Math.Ceiling((double)billDTO.DiscountValue / 1000) * 1000;
+                }
 
-        //        discount = discount > price ? price : discount;
-        //        totalPrice = price - discount;
+                discount = discount > price ? price : discount;
+                totalPrice = price - discount;
 
-        //        bill.Price = price;
-        //        bill.DiscountStyle = billDTO.DiscountStyle;
-        //        bill.DiscountStyleValue = billDTO.DiscountValue;
-        //        bill.Discount = discount;
-        //        bill.TotalPrice = totalPrice;
-        //        bill.PaymentPrice = billDTO.PaymentValue;
-        //        bill.UpdateAt = DateTime.UtcNow;
+                bill.Price = price;
+                bill.DiscountStyle = billDTO.DiscountStyle;
+                bill.DiscountStyleValue = billDTO.DiscountValue;
+                bill.Discount = discount;
+                bill.TotalPrice = totalPrice;
+                bill.PaymentPrice = billDTO.PaymentValue;
+                bill.UpdateAt = DateTime.UtcNow;
 
-        //        _context.Bills.Update(bill);
-        //        await _context.SaveChangesAsync();
+                _context.Bills.Update(bill);
+                await _context.SaveChangesAsync();
 
-        //        return Json(new
-        //        {
-        //            Success = true,
-        //            Message = "Success",
-        //            Data = Url.Action(nameof(Export), new { id = bill.Id })
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex.Message);
-        //        return Json(new
-        //        {
-        //            Success = false,
-        //            Message = "Lỗi hệ thống"
-        //        });
-        //    }
-        //}
+                return Json(new
+                {
+                    Success = true,
+                    Message = "Success",
+                    Data = Url.Action(nameof(Export), new { id = bill.Id })
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Json(new
+                {
+                    Success = false,
+                    Message = "Lỗi hệ thống"
+                });
+            }
+        }
 
         [HttpPost("delete"), ActionName("Delete")]
         [ValidateAntiForgeryToken]

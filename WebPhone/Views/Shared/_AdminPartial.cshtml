@@ -1,6 +1,6 @@
 ﻿@if (User.Identity!.IsAuthenticated)
 {
-    <div class="btn-group">
+    <div class="btn-group" style="z-index: 9999;">
         <button type="button" class="btn" data-bs-toggle="dropdown" aria-expanded="false">Admin</button>
         <ul class="dropdown-menu wrap-none">
             <li><a class="nav-link text-dark" asp-area="Products" asp-controller="CateProducts" asp-action="Index">Danh mục sản phẩm</a></li>
